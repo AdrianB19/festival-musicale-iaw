@@ -34,7 +34,7 @@ Progetto dell'esame relativo al corso Introduzione alle Applicazioni Web per il 
 
 
 ## 📝​Scelta della base di dati
-![diagramma_er](/static/images/er_festival.png)
+![diagramma_er](/static/images/database_er.png.png)
 Gli utenti sono divisi in due categorie, partecipanti ed organizzatori. Un partecipante può comperare un solo biglietto, per dei quali si tiene traccia del tipo (full pass, due giorni, giornaliero).
 Gli organizzatori possono creare più performances delle quali son noti giorno, ora di inizio e di fine, una descrizione, una o più foto, la visibilità ed anche il genere.
 Si tiene traccia anche dell'artista (o gruppo di artisti) che partecipa alla performance ed il palco presso quest'ultima prende luogo. 
