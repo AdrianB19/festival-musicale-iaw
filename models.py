@@ -1,9 +1,10 @@
 # definisco le entità del db
 
-class Utente:
-    def __init__(self, id, nome, email, password, tipo):
+class User(UserMixin):
+    def __init__(self, id, nome, cognome, email, password,tipo):
         self.id = id
         self.nome = nome
+        self.cognome = cognome
         self.email = email
         self.password = password
         self.tipo = tipo
