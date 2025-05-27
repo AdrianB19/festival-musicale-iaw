@@ -45,3 +45,20 @@ def subscribe():
     
     flash("Registrazione completata!", "success")
     return redirect(url_for('login'))
+
+
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    user_data = utenti_dao.get_utente_id(user_id)
+    if user_data:
+        return User(
+            id=user_data[0], 
+            nome=user_data[1], 
+            cognome=user_data[2],
+            email=user_data[3],
+            password=user_data[4],
+            tipo=user_data[5]
+        )
+    return None
