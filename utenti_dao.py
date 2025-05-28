@@ -32,9 +32,9 @@ def get_utente_email(u_email):
 
 
 # restituisce utenti per id 
-def get_utente_email(u_id):
+def get_utente_id(u_id):
 
-    sql ="SELECT * FROM utenti WHERE email = ?"
+    sql ="SELECT * FROM utenti WHERE id = ?"
 
     conn = sqlite3.connect("soundwave.db")
     cursor = conn.cursor()
