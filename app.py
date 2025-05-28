@@ -5,7 +5,7 @@ from flask_login import LoginManager, login_user, login_required, current_user, 
 
 from models  import User, Biglietto, Artista, Performance, Palco, Immagine
 
-import utenti_dao, biglietti_dao, artisti_dao, immagini_dao, performances_dao
+import utenti_dao, biglietti_dao, artisti_dao, immagini_dao, performances_dao, palchi_dao
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secretpass"
@@ -17,7 +17,8 @@ login_manager.init_app(app)
 # manda alla home
 @app.route("/")
 def home():
-    return render_template("home.html")
+    performances = performances_dao.get_performance_pubbliche()
+    return render_template("home.html", performances=performances)
 
 # manda al form di login
 @app.route("/login")
@@ -107,21 +108,34 @@ def autenticare_utente():
         return redirect(url_for("home"))
 
 #route unica per il profilo
-@app.route('/profilo')
+@app.route('/profilo', methods=['GET', 'POST'])
 @login_required
 def profilo():
     if session.get('tipo') == 'organizzatore':
-        performance_pubblicate = performances_dao.get_performance_pubblicate_by_organizzatore(current_user.id)
+        if request.method == 'POST':
+            # gestione form (come fatto prima)
+            ...
+
+        pubblicate = performances_dao.get_performance_pubblicate_by_organizzatore(current_user.id)
         bozze = performances_dao.get_bozze_by_organizzatore(current_user.id)
-        return render_template("profilo_organizzatore.html", pubblicate=performance_pubblicate, bozze=bozze)
-    
-    elif session.get('tipo') == 'partecipante':
-        biglietto = biglietti_dao.get_biglietto_by_partecipante(current_user.id)
-        return render_template("profilo_partecipante.html", biglietto=biglietto)
-    
-    else:
-        flash("Ruolo utente non riconosciuto", "danger")
-        return redirect(url_for('home'))
+        palchi = palchi_dao.get_palchi()
+
+        # immagini performance
+        immagini_performance = {}
+        for perf in pubblicate:
+            img_ids = immagini_dao.get_immagini_di_performance(perf[0])
+            immagini_performance[perf[0]] = img_ids  # img_ids è lista di tuple (id_img,)
+
+        # artista: supponiamo che artista (nome, foto) sia associato alla performance in modo 1:1
+        artisti = {}
+        for perf in pubblicate:
+            artista_info = artisti_dao.get_artista_by_performance(perf[0])  # tu devi implementare questa funzione
+            artisti[perf[0]] = artista_info  # es. ("Coldplay", "foto.jpg")
+
+        return render_template("profilo_organizzatore.html", pubblicate=pubblicate, bozze=bozze,
+                               palchi=palchi, immagini_performance=immagini_performance, artisti=artisti)
+
+
 
 
 

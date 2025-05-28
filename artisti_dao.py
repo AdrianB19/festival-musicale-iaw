@@ -61,3 +61,4 @@ def get_tutti_gli_artisti():
     conn.close()
     
     return artisti
+
