@@ -46,7 +46,34 @@ def subscribe():
     flash("Registrazione completata!", "success")
     return redirect(url_for('login'))
 
+@app.route("/autenticare", methods=["POST"])
+def autenticare_utente():
 
+    #funzione vera e propria a cui punto dopo aver fatto il login
+
+    utente_form = request.form.to_dict()  
+    utente_db = utenti_dao.get_user_by_email(utente_form["txt_email"])
+    #query per email
+
+    if not utente_db:
+        
+        print("Credenziali non valide")
+        return redirect(url_for("home"))
+    
+        #verifica sul controllo della password
+        
+    else:
+        new = User(
+            id=utente_db["id"],
+            nome=utente_db["nome"],
+            cognome=utente_db["cognome"],
+            email=utente_db["email"],
+            password=utente_db["password"],
+        )
+
+        login_user(new)
+
+        return redirect(url_for("home"))
 
 
 @login_manager.user_loader
