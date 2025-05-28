@@ -26,6 +26,9 @@
           </svg> </a>
       </div>
       <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+          {% if current_user.is_authenticated %}
+          <li class="nav-item"><a href="" class="nav-link link-body-emphasis px-2">{{current_user.nome}}</a></li>
+          {% endif %}
         <li><a href="{{url_for('home')}}" class="nav-link px-2 link-secondary">Home</a></li>
         <li><a href="#" class="nav-link px-2">Features</a></li>
         <li><a href="#" class="nav-link px-2">Pricing</a></li>
