@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block titolo %}Profilo Organizzatore{% endblock %}
+{% block contenuto %}
+<h2>Le tue performance pubblicate</h2>
+<ul>
+  {% for perf in pubblicate %}
+  <li>{{ perf.nome_artista }} - {{ perf.giorno }} {{ perf.orario_inizio }}</li>
+  {% endfor %}
+</ul>
+
+<h3>Bozze</h3>
+<ul>
+  {% for b in bozze %}
+  <li>{{ b.nome_artista }} (Bozza)</li>
+  {% endfor %}
+</ul>
+<!-- Aggiungi bottone e modal Bootstrap per creare nuove performance -->
+{% endblock %}
