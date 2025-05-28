@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block titolo %}About Us{% endblock %}
+
+{% block contenuto %}
+
+<h2>Il tuo biglietto</h2>
+{% if biglietto %}
+<p><strong>Tipo:</strong> {{ biglietto['tipo'] }}</p>
+<p><strong>Giorni:</strong> {{ biglietto['giorni'] }}</p>
+{% else %}
+<p>Non hai ancora acquistato un biglietto.</p>
+{% endif %}
+
+
+{% endblock %}
