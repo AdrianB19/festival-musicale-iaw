@@ -1,5 +1,5 @@
 # import necessari a visualizzazione delle routes, per l'autenticazione, per vedere i moduli
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 
@@ -38,6 +38,11 @@ def faq():
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+# manda alla pagina biglietti
+@app.route("/biglietti")
+def biglietti():
+    return render_template("biglietti.html")
 
 # disconnette l'utente autenticato, protetto con login_required
 @app.route("/logout")
@@ -94,9 +99,82 @@ def autenticare_utente():
 
         login_user(user)
 
+        #salvo l'utente (id + tipo)
+        session['id'] = user.id
+        session['tipo'] = user.tipo
+
         flash("Accesso effettuato con successo!","success")
         return redirect(url_for("home"))
 
+#route unica per il profilo
+@app.route('/profilo')
+@login_required
+def profilo():
+    if session.get('tipo') == 'organizzatore':
+        performance_pubblicate = performances_dao.get_performance_pubblicate_by_organizzatore(current_user.id)
+        bozze = performances_dao.get_bozze_by_organizzatore(current_user.id)
+        return render_template("profilo_organizzatore.html", pubblicate=performance_pubblicate, bozze=bozze)
+    
+    elif session.get('tipo') == 'partecipante':
+        biglietto = biglietti_dao.get_biglietto_by_partecipante(current_user.id)
+        return render_template("profilo_partecipante.html", biglietto=biglietto)
+    
+    else:
+        flash("Ruolo utente non riconosciuto", "danger")
+        return redirect(url_for('home'))
+
+
+
+#route per profilo partecipante
+@app.route("/profilo_partecipante")
+@login_required
+def profilo_partecipante():
+    if session.get('tipo') != 'partecipante':
+        flash("Accesso non autorizzato.", "danger")
+        return redirect(url_for("home"))
+    
+    biglietti = biglietti_dao.get_biglietti_by_utente(current_user.id)
+    return render_template("profilo_partecipante.html", biglietti=biglietti)
+
+# profilo organizzatore
+@app.route("/profilo_organizzatore", methods=["GET", "POST"])
+@login_required
+def profilo_organizzatore():
+    if session.get('tipo') != 'organizzatore':
+        flash("Accesso non autorizzato.", "danger")
+        return redirect(url_for("home"))
+    
+    if request.method == "POST":
+        # Recupera i dati dal form
+        data = request.form.get("data")
+        ora_inizio = request.form.get("ora_inizio")
+        durata = request.form.get("durata")
+        genere = request.form.get("genere")
+        descrizione = request.form.get("descrizione")
+        visibilita = int(request.form.get("visibilita"))
+        id_palco = int(request.form.get("id_palco"))
+        
+        # Calcola ora_fine
+        from datetime import datetime, timedelta
+        ora_inizio_dt = datetime.strptime(ora_inizio, "%H:%M")
+        ora_fine_dt = ora_inizio_dt + timedelta(minutes=int(durata))
+        ora_fine = ora_fine_dt.strftime("%H:%M")
+        
+        # Verifica sovrapposizione
+        sovrapposta = performances_dao.verifica_sovrapposizione(data, ora_inizio, ora_fine, id_palco)
+        if sovrapposta:
+            flash("Errore: la performance si sovrappone a un'altra già pubblicata su questo palco.", "danger")
+        else:
+            performances_dao.nuova_performance(data, ora_inizio, durata, genere, descrizione, visibilita, id_palco, current_user.id)
+            flash("Performance aggiunta con successo.", "success")
+            return redirect(url_for("profilo_organizzatore"))
+    
+    # Recupera le performance e i palchi
+    performance_pubblicate = performances_dao.get_performance_pubblicate_by_organizzatore(current_user.id)
+    bozze = performances_dao.get_bozze_by_organizzatore(current_user.id)
+    palchi = palchi_dao.get_palchi()
+    
+    return render_template("profilo_organizzatore.html", performance_pubblicate=performance_pubblicate, bozze=bozze, palchi=palchi)
 
 # carica utente dal db in base al suo id
 @login_manager.user_loader

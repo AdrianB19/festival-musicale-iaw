@@ -29,3 +29,18 @@ def count_biglietti_giornalieri(giorno):
     conn.close()
 
     return count
+
+def get_biglietto_by_partecipante(id_partecipante):
+
+    sql = "SELECT * FROM biglietti WHERE id_partecipante = ?"
+
+    conn = sqlite3.connect("soundwave.db")
+    cursor = conn.cursor()
+    cursor.execute(sql, (id_partecipante,))
+
+    biglietto = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    return biglietto
