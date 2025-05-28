@@ -2,8 +2,10 @@
 
 from flask_login import UserMixin
 
+
+# utente generico e con UserMixin permette di vedere se è autenticato
 class User(UserMixin):
-    def __init__(self, id, nome, cognome, email, password,tipo):
+    def __init__(self, id, nome, cognome, email, password, tipo):
         self.id = id
         self.nome = nome
         self.cognome = cognome
@@ -11,6 +13,7 @@ class User(UserMixin):
         self.password = password
         self.tipo = tipo
 
+# classe biglietto
 class Biglietto:
     def __init__(self, id, id_utente, tipo, giorni):
         self.id = id
@@ -18,6 +21,7 @@ class Biglietto:
         self.tipo = tipo  # "giornaliero", "2giorni", "full"
         self.giorni = giorni  # es. "ven", "sab,dom"
 
+# rappresenta la performance
 class Performance:
     def __init__(self, id, id_artista, giorno, orario, durata, descrizione, palco, genere, pubblicata, id_organizzatore):
         self.id = id
@@ -31,6 +35,7 @@ class Performance:
         self.pubblicata = pubblicata  # booleano (0 = bozza, 1 = pubblicata)
         self.id_organizzatore = id_organizzatore
 
+# dati supplementari per artista, palco ed immagine
 class Artista:
     def __init__(self, id, nome):
         self.id = id
