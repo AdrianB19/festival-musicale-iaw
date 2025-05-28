@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block titolo %}About Us{% endblock %}
+
+{% block contenuto %}
+<h1>Header</h1>
+<img src="{{ url_for('static', filename='images/location.jpg') }}" class="img-fluid rounded" alt="location" />
+<p>Il Torino Soundwave è nato nel 2018 dall'idea di un gruppo di appassionati...</p>
+<p>Accoglie oltre 15.000 spettatori ogni anno nel cuore del Parco Dora.</p>
+
+{% endblock %}
