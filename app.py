@@ -1,7 +1,7 @@
 # import necessari a visualizzazione delle routes, per l'autenticazione, per vedere i moduli
 from flask import Flask, render_template, request, redirect, url_for, flash
 
-from flask_login import LoginManager, login_user, login_required, current_user
+from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 
 from models  import User, Biglietto, Artista, Performance, Palco, Immagine
 
@@ -14,19 +14,40 @@ app.config["SECRET_KEY"] = "secretpass"
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+# manda alla home
 @app.route("/")
 def home():
     return render_template("home.html")
 
+# manda al form di login
 @app.route("/login")
 def login():
     return render_template("login.html")
 
+# manda alla registrazione
 @app.route("/signup")
 def signup():
     return render_template("signup.html")
 
-#processo i dati del form
+# manda alla pagina about us
+@app.route("/faq")
+def faq():
+    return render_template("faq.html")
+
+# manda alla pagina about us
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+# disconnette l'utente autenticato, protetto con login_required
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("Sei stato disconnesso", "info")
+    return redirect(url_for("home"))
+
+# gestisce registrazione con controlli inclusi su esistenza
 @app.route("/subscribe", methods=["POST"])
 def subscribe():
     email = request.form.get('txt_email')
@@ -46,14 +67,13 @@ def subscribe():
     flash("Registrazione completata!", "success")
     return redirect(url_for('login'))
 
+# autentica un utente dopo il login
 @app.route("/autenticare", methods=["POST"])
 def autenticare_utente():
+    email = request.form.get("txt_email")
+    password = request.form.get("txt_password")
 
-    #funzione vera e propria a cui punto dopo aver fatto il login
-
-    utente_form = request.form.to_dict()  
-    utente_db = utenti_dao.get_user_by_email(utente_form["txt_email"])
-    #query per email
+    utente_db = utenti_dao.get_utente_email(email)
 
     if not utente_db:
         
@@ -63,19 +83,22 @@ def autenticare_utente():
         #verifica sul controllo della password
         
     else:
-        new = User(
-            id=utente_db["id"],
-            nome=utente_db["nome"],
-            cognome=utente_db["cognome"],
-            email=utente_db["email"],
-            password=utente_db["password"],
+        user = User(
+            id=utente_db[0],
+            nome=utente_db[1],
+            cognome=utente_db[2],
+            email=utente_db[3],
+            password=utente_db[4],
+            tipo=utente_db[5],
         )
 
-        login_user(new)
+        login_user(user)
 
+        flash("Accesso effettuato con successo!","success")
         return redirect(url_for("home"))
 
 
+# carica utente dal db in base al suo id
 @login_manager.user_loader
 def load_user(user_id):
     user_data = utenti_dao.get_utente_id(user_id)
