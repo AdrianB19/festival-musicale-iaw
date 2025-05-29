@@ -35,12 +35,6 @@ class Performance:
         self.pubblicata = pubblicata  # booleano (0 = bozza, 1 = pubblicata)
         self.id_organizzatore = id_organizzatore
 
-# dati supplementari per artista, palco ed immagine
-class Artista:
-    def __init__(self, id, nome):
-        self.id = id
-        self.nome = nome
-
 class Palco:
     def __init__(self, id, nome):
         self.id = id
@@ -50,4 +44,4 @@ class Immagine:
     def __init__(self, id, id_performance, path):
         self.id = id
         self.id_performance = id_performance
-        self.path = path  # percorso immagine, es. "/static/images/img1.jpg"
+        self.path = path 
