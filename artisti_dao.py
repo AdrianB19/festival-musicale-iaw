@@ -63,16 +63,21 @@ def get_tutti_gli_artisti():
     return artisti
 
 def get_artista_by_performance(id_performance):
+
+    sql = """
+        SELECT a.nome, a.img_artista
+        FROM artisti a
+        JOIN performances p ON p.id_artista = a.id
+        WHERE p.id = ?
     """
-    Ritorna (nome, img_artista) dell’artista associato a una performance.
-    """
-    sql = "SELECT nome, img_artista FROM artisti WHERE id_performance = ?"
 
     conn = sqlite3.connect("soundwave.db")
+
     cursor = conn.cursor()
     cursor.execute(sql, (id_performance,))
     artista = cursor.fetchone()
+
     cursor.close()
     conn.close()
-
-    return artista  
+    
+    return artista
