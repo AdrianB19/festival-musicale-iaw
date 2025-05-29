@@ -15,7 +15,7 @@
               <div class="carousel-inner">
                 {% for img in immagini_performance[perf[0]] %}
                 <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
-                  <img src="{{ url_for('static', filename='uploads/' ~ img[0]) }}" class="d-block w-100"
+                  <img src="{{ url_for('static', filename=img[0] | replace('static/', '')) }}" class="d-block w-100"
                     alt="Foto performance">
                 </div>
                 {% endfor %}
@@ -41,8 +41,9 @@
               <hr>
               <p class="card-text">
                 <strong>Artista:</strong> {{ artisti[perf[0]][0] }}<br>
-                <img src="{{ url_for('static', filename='uploads/' ~ artisti[perf[0]][1]) }}" width="80"
-                  class="rounded">
+                <img src="{{ '/' ~ artisti[perf[0]][1] }}" width="100">
+
+
               </p>
             </div>
           </div>
@@ -85,20 +86,25 @@
   <div class="modal fade" id="modalNuovaPerformance" tabindex="-1" aria-labelledby="modalNuovaPerformanceLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg">
-      <form action="{{ url_for('profilo') }}" method="POST" class="modal-content" enctype="multipart/form-data">
+      <form action="{{ url_for('profilo_organizzatore') }}" method="POST" class="modal-content"
+        enctype="multipart/form-data">
         <div class="modal-header">
           <h5 class="modal-title" id="modalNuovaPerformanceLabel">Aggiungi Performance</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
         </div>
         <div class="modal-body">
+
+          <!-- Data -->
           <div class="mb-2">
             <label for="data">Giorno</label>
             <select name="data" class="form-select" required>
-              <option value="2025-06-20">Venerdì</option>
-              <option value="2025-06-21">Sabato</option>
-              <option value="2025-06-22">Domenica</option>
+              <option value="2025-06-20">Venerdì 20 Giugno</option>
+              <option value="2025-06-21">Sabato 21 Giugno</option>
+              <option value="2025-06-22">Domenica 22 Giugno</option>
             </select>
           </div>
+
+          <!-- Orari -->
           <div class="mb-2">
             <label>Ora inizio</label>
             <input type="time" name="ora_inizio" class="form-control" required>
@@ -106,6 +112,16 @@
           <div class="mb-2">
             <label>Ora fine</label>
             <input type="time" name="ora_fine" class="form-control" required>
+          </div>
+
+          <!-- Artista e descrizione -->
+          <div class="mb-2">
+            <label>Nome artista</label>
+            <input type="text" name="nome_artista" class="form-control" required>
+          </div>
+          <div class="mb-2">
+            <label>Numero di artisti</label>
+            <input type="number" name="numero_artisti" min="1" class="form-control" required>
           </div>
           <div class="mb-2">
             <label>Genere musicale</label>
@@ -115,6 +131,8 @@
             <label>Descrizione</label>
             <textarea name="descrizione" class="form-control" required></textarea>
           </div>
+
+          <!-- Palco -->
           <div class="mb-2">
             <label>Palco</label>
             <select name="id_palco" class="form-select" required>
@@ -123,6 +141,8 @@
               {% endfor %}
             </select>
           </div>
+
+          <!-- Visibilità -->
           <div class="mb-2">
             <label>Visibilità</label>
             <select name="visibilita" class="form-select" required>
@@ -130,19 +150,23 @@
               <option value="0">Bozza</option>
             </select>
           </div>
+
+          <!-- Immagini -->
           <div class="mb-2">
             <label>Immagine artista (una sola)</label>
             <input type="file" name="img_artista" accept="image/*" class="form-control" required>
           </div>
           <div class="mb-2">
             <label>Immagini performance (puoi selezionare più file)</label>
-            <input type="file" name="img_performance" accept="image/*" class="form-control" multiple>
+            <input type="file" name="img_performance[]" accept="image/*" class="form-control" multiple>
           </div>
+
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Salva Performance</button>
         </div>
       </form>
+
     </div>
   </div>
 </div>

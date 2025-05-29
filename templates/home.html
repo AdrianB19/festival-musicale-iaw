@@ -36,6 +36,60 @@
     </aside>
 </main>
 <section>
+    <section class="mt-5">
+        <h2 class="mb-4">Performance Pubbliche</h2>
+
+        <div class="row">
+            {% for perf in performances %}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow">
+                    <div class="row g-0">
+                        <div class="col-md-5">
+                            <div id="carouselHome{{ perf[0] }}" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    {% for img in immagini_performance[perf[0]] %}
+                                    <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+                                        <img src="{{ url_for('static', filename=img[0]) }}" class="d-block w-100"
+                                            alt="foto performance">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <button class="carousel-control-prev" type="button"
+                                    data-bs-target="#carouselHome{{ perf[0] }}" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button"
+                                    data-bs-target="#carouselHome{{ perf[0] }}" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon"></span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ perf[5] }}</h5>
+                                <p class="card-text"><strong>Data:</strong> {{ perf[1] }}</p>
+                                <p class="card-text"><strong>Ora:</strong> {{ perf[2] }} - {{ perf[3] }}</p>
+                                <p class="card-text"><strong>Durata:</strong>
+                                    {{ (perf[3][:2]|int - perf[2][:2]|int) * 60 + (perf[3][3:5]|int - perf[2][3:5]|int)
+                                    }} minuti
+                                </p>
+                                <p class="card-text"><strong>Genere:</strong> {{ perf[4] }}</p>
+                                <p class="card-text"><strong>Palco:</strong> {{ perf[7] }}</p>
+                                <hr>
+                                <p class="card-text">
+                                    <strong>Artista:</strong> {{ artisti[perf[0]][0] }}<br>
+                                    <img src="{{ url_for('static', filename=artisti[perf[0]][1]) }}" width="80"
+                                        class="rounded mt-1">
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
 </section>
 
 {% endblock %}
