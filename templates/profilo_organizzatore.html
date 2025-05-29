@@ -7,44 +7,48 @@
 
   <div class="row">
     {% for perf in pubblicate %}
-      <div class="col-md-6 mb-4">
-        <div class="card">
-          <div class="row g-0">
-            <div class="col-md-5">
-              <div id="carouselPerf{{ perf[0] }}" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                  {% for img in immagini_performance[perf[0]] %}
-                    <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
-                      <img src="{{ url_for('static', filename='uploads/' ~ img[0]) }}" class="d-block w-100" alt="Foto performance">
-                    </div>
-                  {% endfor %}
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="row g-0">
+          <div class="col-md-5">
+            <div id="carouselPerf{{ perf[0] }}" class="carousel slide" data-bs-ride="carousel">
+              <div class="carousel-inner">
+                {% for img in immagini_performance[perf[0]] %}
+                <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+                  <img src="{{ url_for('static', filename='uploads/' ~ img[0]) }}" class="d-block w-100"
+                    alt="Foto performance">
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselPerf{{ perf[0] }}" data-bs-slide="prev">
-                  <span class="carousel-control-prev-icon"></span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselPerf{{ perf[0] }}" data-bs-slide="next">
-                  <span class="carousel-control-next-icon"></span>
-                </button>
+                {% endfor %}
               </div>
+              <button class="carousel-control-prev" type="button" data-bs-target="#carouselPerf{{ perf[0] }}"
+                data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#carouselPerf{{ perf[0] }}"
+                data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+              </button>
             </div>
-            <div class="col-md-7">
-              <div class="card-body">
-                <h5 class="card-title">{{ perf[5] }}</h5>
-                <p class="card-text">
-                  <strong>Data:</strong> {{ perf[1] }}<br>
-                  <strong>Orario:</strong> {{ perf[2] }} - {{ perf[3] }}<br>
-                  <strong>Genere:</strong> {{ perf[4] }}
-                </p>
-                <hr>
-                <p class="card-text">
-                  <strong>Artista:</strong> {{ artisti[perf[0]][0] }}<br>
-                  <img src="{{ url_for('static', filename='uploads/' ~ artisti[perf[0]][1]) }}" width="80" class="rounded">
-                </p>
-              </div>
+          </div>
+          <div class="col-md-7">
+            <div class="card-body">
+              <h5 class="card-title">{{ perf[5] }}</h5>
+              <p class="card-text">
+                <strong>Data:</strong> {{ perf[1] }}<br>
+                <strong>Orario:</strong> {{ perf[2] }} - {{ perf[3] }}<br>
+                <strong>Genere:</strong> {{ perf[4] }}
+              </p>
+              <hr>
+              <p class="card-text">
+                <strong>Artista:</strong> {{ artisti[perf[0]][0] }}<br>
+                <img src="{{ url_for('static', filename='uploads/' ~ artisti[perf[0]][1]) }}" width="80"
+                  class="rounded">
+              </p>
             </div>
           </div>
         </div>
       </div>
+    </div>
     {% endfor %}
   </div>
 
@@ -53,20 +57,20 @@
   <h3>Bozze</h3>
   <div class="row">
     {% for bozza in bozze %}
-      <div class="col-md-6 mb-3">
-        <div class="card border-warning">
-          <div class="card-body">
-            <h5 class="card-title">{{ bozza[5] }}</h5>
-            <p class="card-text">
-              <strong>Data:</strong> {{ bozza[1] }}<br>
-              <strong>Orario:</strong> {{ bozza[2] }} - {{ bozza[3] }}<br>
-              <strong>Genere:</strong> {{ bozza[4] }}<br>
-              <strong>Palco:</strong> {{ bozza[7] }}
-            </p>
-            <p class="text-muted">Stato: <strong>Bozza</strong></p>
-          </div>
+    <div class="col-md-6 mb-3">
+      <div class="card border-warning">
+        <div class="card-body">
+          <h5 class="card-title">{{ bozza[5] }}</h5>
+          <p class="card-text">
+            <strong>Data:</strong> {{ bozza[1] }}<br>
+            <strong>Orario:</strong> {{ bozza[2] }} - {{ bozza[3] }}<br>
+            <strong>Genere:</strong> {{ bozza[4] }}<br>
+            <strong>Palco:</strong> {{ bozza[7] }}
+          </p>
+          <p class="text-muted">Stato: <strong>Bozza</strong></p>
         </div>
       </div>
+    </div>
     {% endfor %}
   </div>
 
@@ -78,7 +82,8 @@
   </div>
 
   <!-- Modal per nuova performance -->
-  <div class="modal fade" id="modalNuovaPerformance" tabindex="-1" aria-labelledby="modalNuovaPerformanceLabel" aria-hidden="true">
+  <div class="modal fade" id="modalNuovaPerformance" tabindex="-1" aria-labelledby="modalNuovaPerformanceLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <form action="{{ url_for('profilo') }}" method="POST" class="modal-content" enctype="multipart/form-data">
         <div class="modal-header">
@@ -114,7 +119,7 @@
             <label>Palco</label>
             <select name="id_palco" class="form-select" required>
               {% for palco in palchi %}
-                <option value="{{ palco[0] }}">{{ palco[1] }}</option>
+              <option value="{{ palco[0] }}">{{ palco[1] }}</option>
               {% endfor %}
             </select>
           </div>
