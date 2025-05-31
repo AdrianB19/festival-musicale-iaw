@@ -16,6 +16,9 @@ app.config["SECRET_KEY"] = "secretpass"
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+POST_IMG_WIDTH = 600
+
 @app.route('/')
 def home():
     performances = performances_dao.get_performances_pubbliche()
@@ -58,7 +61,6 @@ def logout():
     flash("Sei stato disconnesso", "info")
     return redirect(url_for("home"))
 
-
 # gestisce registrazione con controlli inclusi su esistenza
 @app.route("/subscribe", methods=["POST"])
 def subscribe():
@@ -82,7 +84,6 @@ def subscribe():
     flash("Registrazione completata!", "success")
 
     return redirect(url_for('login'))
-
 
 # autentica un utente dopo il login
 @app.route("/autenticare", methods=["POST"])
@@ -119,7 +120,6 @@ def autenticare_utente():
 
 #route unica per il profilo
 POST_IMG_WIDTH = 600  # larghezza fissa immagini
-
 @app.route("/profilo")
 @login_required
 def profilo():
@@ -157,7 +157,6 @@ def profilo_organizzatore():
     if session.get('tipo') != 'organizzatore':
         flash("Accesso non autorizzato.", "danger")
         return redirect(url_for("home"))
-
     
     pubblicate = performances_dao.get_performances_pubbliche_organizzatore(current_user.id)
     bozze = performances_dao.get_bozze_organizzatore(current_user.id)
@@ -204,9 +203,6 @@ def nuova_performance():
             flash("Errore: performance sovrapposta a un'altra sullo stesso palco.", "danger")
             return redirect(url_for("profilo_organizzatore"))
 
-    # Estensioni accettate e resize immagine
-    POST_IMG_WIDTH = 600
-    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
     img = Image.open(uploaded_file)
     ext = uploaded_file.filename.rsplit(".", 1)[-1].lower()
     if ext not in ALLOWED_EXTENSIONS:
@@ -222,7 +218,6 @@ def nuova_performance():
     img.save(f"static/images/@{safe_nome_artista}-{secondi}.{ext}")
     nuovo_nome_foto = f"images/@{safe_nome_artista}-{secondi}.{ext}"
 
-
     performances_dao.nuova_performance(
         data, ora_inizio, ora_fine, descrizione,
         nome_artista, numero_artisti, nuovo_nome_foto,
@@ -231,7 +226,6 @@ def nuova_performance():
 
     flash("Performance creata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
-
 
 @app.route("/pubblica_bozza/<int:id>", methods=["POST"])
 @login_required
@@ -270,7 +264,6 @@ def modifica_bozza(id):
         flash("Bozza non trovata", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
-    # Campi dal form
     data = request.form.get("data")
     ora_inizio = request.form.get("ora_inizio")
     ora_fine = request.form.get("ora_fine")
@@ -282,22 +275,19 @@ def modifica_bozza(id):
     numero_artisti = int(request.form.get("numero_artisti"))
     uploaded_file = request.files.get("img_artista")
 
-    # Validazione
     if not all([data, ora_inizio, ora_fine, genere, descrizione, id_palco, nome_artista, numero_artisti]):
         flash("Errore: tutti i campi devono essere compilati.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
-    # Gestione immagine
     if uploaded_file and uploaded_file.filename != "":
         ext = uploaded_file.filename.rsplit(".", 1)[-1].lower()
-        ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+        
 
         if ext not in ALLOWED_EXTENSIONS:
             flash("Errore: solo immagini PNG o JPG sono accettate.", "danger")
             return redirect(url_for("profilo_organizzatore"))
 
         img = Image.open(uploaded_file)
-        POST_IMG_WIDTH = 600
         width, height = img.size
         new_height = height / width * POST_IMG_WIDTH
         size = POST_IMG_WIDTH, new_height
@@ -327,8 +317,6 @@ def modifica_bozza(id):
 
     flash("Bozza aggiornata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
-
-
 
 # carica utente dal db in base al suo id
 @login_manager.user_loader
