@@ -1,52 +1,42 @@
 {% extends "base.html" %}
-{% block titolo %}Profilo Organizzatore{% endblock %}
+
+{% block titolo %}
+Profilo Organizzatore
+{% endblock %}
 
 {% block contenuto %}
 <div class="container">
+
+  <!-- Sezione performance pubblicate -->
   <h2 class="mb-4">Performance Pubblicate</h2>
 
   <div class="row">
     {% for perf in pubblicate %}
     <div class="col-md-6 mb-4">
       <div class="card">
-        <div class="row g-0">
-          <div class="col-md-5">
-            <div id="carouselPerf{{ perf[0] }}" class="carousel slide" data-bs-ride="carousel">
-              <div class="carousel-inner">
-                {% for img in immagini_performance[perf[0]] %}
-                <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
-                  <img src="{{ url_for('static', filename=img[0] | replace('static/', '')) }}" class="d-block w-100"
-                    alt="Foto performance">
-                </div>
-                {% endfor %}
-              </div>
-              <button class="carousel-control-prev" type="button" data-bs-target="#carouselPerf{{ perf[0] }}"
-                data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
-              </button>
-              <button class="carousel-control-next" type="button" data-bs-target="#carouselPerf{{ perf[0] }}"
-                data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
-              </button>
-            </div>
+        <div class="row g-0 h-100">
+
+          <!-- Immagine artista a sinistra centrata -->
+          <div class="col-md-3 d-flex align-items-center justify-content-center p-3">
+            <img src="{{ url_for('static', filename=artisti[perf[0]][1]) }}" class="rounded-circle"
+              style="width: 80px; height: 80px; object-fit: cover;" alt="Foto artista {{ artisti[perf[0]][0] }}">
           </div>
-          <div class="col-md-7">
+          <!-- Dettagli performance pubblicata -->
+          <div class="col-md-9">
             <div class="card-body">
               <h5 class="card-title">{{ perf[5] }}</h5>
-              <p class="card-text">
-                <strong>Data:</strong> {{ perf[1] }}<br>
-                <strong>Orario:</strong> {{ perf[2] }} - {{ perf[3] }}<br>
-                <strong>Genere:</strong> {{ perf[4] }}
+              <p class="card-text"><strong>Artista:</strong> {{ artisti[perf[0]][0] }}</p>
+              <p class="card-text"><strong>Data:</strong> {{ perf[1] }}</p>
+              <p class="card-text"><strong>Ora:</strong> {{ perf[2] }} - {{ perf[3] }}</p>
+              <p class="card-text"><strong>Durata:</strong>
+                {{ (perf[3][:2]|int - perf[2][:2]|int) * 60 + (perf[3][3:5]|int - perf[2][3:5]|int) }} minuti
               </p>
-              <hr>
-              <p class="card-text">
-                <strong>Artista:</strong> {{ artisti[perf[0]][0] }}<br>
-                <img src="{{ '/' ~ artisti[perf[0]][1] }}" width="100">
-
-
-              </p>
+              <p class="card-text"><strong>Descrizione:</strong> {{ perf[4] }}</p>
+              <p class="card-text"><strong>Genere:</strong> {{ perf[8] }}</p>
+              <p class="card-text"><strong>Palco:</strong> {{ perf[10] }}</p>
             </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -55,38 +45,64 @@
 
   <hr class="my-5">
 
-  <h3>Bozze</h3>
+  <!-- Sezione bozze performance -->
+  <h3>Le tue bozze</h3>
   <div class="row">
     {% for bozza in bozze %}
-    <div class="col-md-6 mb-3">
-      <div class="card border-warning">
-        <div class="card-body">
-          <h5 class="card-title">{{ bozza[5] }}</h5>
-          <p class="card-text">
-            <strong>Data:</strong> {{ bozza[1] }}<br>
-            <strong>Orario:</strong> {{ bozza[2] }} - {{ bozza[3] }}<br>
-            <strong>Genere:</strong> {{ bozza[4] }}<br>
-            <strong>Palco:</strong> {{ bozza[7] }}
-          </p>
-          <p class="text-muted">Stato: <strong>Bozza</strong></p>
+    <div class="col-md-6 mb-4">
+      <div class="card border-warning shadow-sm">
+        <div class="row g-0 h-100">
+
+          <!-- Immagine artista a sinistra centrata -->
+          <div class="col-md-3 d-flex align-items-center justify-content-center p-3">
+            <img src="{{ url_for('static', filename=artisti[bozza[0]][1]) }}" class="rounded-circle"
+              style="width: 80px; height: 80px; object-fit: cover;" alt="Foto artista {{ artisti[bozza[0]][0] }}">
+          </div>
+
+          <!-- Dettagli della bozza -->
+          <div class="col-md-9">
+            <div class="card-body">
+              <h5 class="card-title">{{ bozza[5] }}</h5>
+              <p class="card-text"><strong>Artista:</strong> {{ artisti[bozza[0]][0] }}</p>
+              <p class="card-text"><strong>Data:</strong> {{ bozza[1] }}</p>
+              <p class="card-text"><strong>Ora:</strong> {{ bozza[2] }} - {{ bozza[3] }}</p>
+              <p class="card-text"><strong>Durata:</strong>
+                {{ (bozza[3][:2]|int - bozza[2][:2]|int) * 60 + (bozza[3][3:5]|int - bozza[2][3:5]|int) }} minuti
+              </p>
+              <p class="card-text"><strong>Descrizione:</strong> {{ bozza[4] }}</p>
+              <p class="card-text"><strong>Genere:</strong> {{ bozza[8] }}</p>
+              <p class="card-text"><strong>Palco:</strong> {{ bozza[10] }}</p>
+
+              <div class="mt-3">
+                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                  data-bs-target="#modalModificaBozza{{ bozza[0] }}">
+                  Modifica
+                </button>
+                <form method="post" action="{{ url_for('pubblica_bozza', id=bozza[0]) }}" class="d-inline">
+                  <button class="btn btn-success btn-sm" type="submit">Pubblica</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
 
-  <!-- Bottone per aprire il modal -->
+  <!-- Bottone nuova performance -->
   <div class="text-end my-4">
     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNuovaPerformance">
       <i class="bi bi-plus-circle"></i> Nuova Performance
     </button>
   </div>
 
-  <!-- Modal per nuova performance -->
+  <!-- MODAL: Form per aggiungere una nuova performance -->
   <div class="modal fade" id="modalNuovaPerformance" tabindex="-1" aria-labelledby="modalNuovaPerformanceLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg">
-      <form action="{{ url_for('profilo_organizzatore') }}" method="POST" class="modal-content"
+      <form action="{{ url_for('nuova_performance') }}" method="POST" class="modal-content"
         enctype="multipart/form-data">
         <div class="modal-header">
           <h5 class="modal-title" id="modalNuovaPerformanceLabel">Aggiungi Performance</h5>
@@ -94,17 +110,15 @@
         </div>
         <div class="modal-body">
 
-          <!-- Data -->
           <div class="mb-2">
             <label for="data">Giorno</label>
             <select name="data" class="form-select" required>
-              <option value="2025-06-20">Venerdì 20 Giugno</option>
-              <option value="2025-06-21">Sabato 21 Giugno</option>
-              <option value="2025-06-22">Domenica 22 Giugno</option>
+              <option value="Venerdì 20 Giugno">Venerdì 20 Giugno</option>
+              <option value="Sabato 21 Giugno">Sabato 21 Giugno</option>
+              <option value="Domenica 22 Giugno">Domenica 22 Giugno</option>
             </select>
           </div>
 
-          <!-- Orari -->
           <div class="mb-2">
             <label>Ora inizio</label>
             <input type="time" name="ora_inizio" class="form-control" required>
@@ -114,7 +128,6 @@
             <input type="time" name="ora_fine" class="form-control" required>
           </div>
 
-          <!-- Artista e descrizione -->
           <div class="mb-2">
             <label>Nome artista</label>
             <input type="text" name="nome_artista" class="form-control" required>
@@ -123,6 +136,7 @@
             <label>Numero di artisti</label>
             <input type="number" name="numero_artisti" min="1" class="form-control" required>
           </div>
+
           <div class="mb-2">
             <label>Genere musicale</label>
             <input type="text" name="genere" class="form-control" required>
@@ -132,7 +146,6 @@
             <textarea name="descrizione" class="form-control" required></textarea>
           </div>
 
-          <!-- Palco -->
           <div class="mb-2">
             <label>Palco</label>
             <select name="id_palco" class="form-select" required>
@@ -142,7 +155,6 @@
             </select>
           </div>
 
-          <!-- Visibilità -->
           <div class="mb-2">
             <label>Visibilità</label>
             <select name="visibilita" class="form-select" required>
@@ -151,14 +163,9 @@
             </select>
           </div>
 
-          <!-- Immagini -->
           <div class="mb-2">
-            <label>Immagine artista (una sola)</label>
-            <input type="file" name="img_artista" accept="image/*" class="form-control" required>
-          </div>
-          <div class="mb-2">
-            <label>Immagini performance (puoi selezionare più file)</label>
-            <input type="file" name="img_performance[]" accept="image/*" class="form-control" multiple>
+            <label>Immagine artista</label>
+            <input type="file" name="img_artista" accept="image/jpg, image/png" class="form-control" required>
           </div>
 
         </div>
@@ -166,8 +173,91 @@
           <button type="submit" class="btn btn-primary">Salva Performance</button>
         </div>
       </form>
-
     </div>
   </div>
+
+  <!-- MODAL per modificare ogni singola bozza -->
+  {% for bozza in bozze %}
+  <div class="modal fade" id="modalModificaBozza{{ bozza[0] }}" tabindex="-1"
+    aria-labelledby="modalModificaBozza{{ bozza[0] }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <form action="{{ url_for('modifica_bozza', id=bozza[0]) }}" method="POST" class="modal-content"
+        enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalModificaBozza{{ bozza[0] }}Label">Modifica Bozza: {{ bozza[5] }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+        </div>
+        <div class="modal-body">
+
+          <div class="mb-2">
+            <label for="data">Giorno</label>
+            <select name="data" class="form-select" required>
+              <option value="Venerdì 20 Giugno" {% if bozza[1]=='Venerdì 20 Giugno' %} selected{% endif %}>Venerdì
+                20 Giugno</option>
+              <option value="Sabato 21 Giugno" {% if bozza[1]=='Sabato 21 Giugno' %}selected{% endif %}>Sabato 21 Giugno
+              </option>
+              <option value="Domenica 22 Giugno" {% if bozza[1]=='Domenica 22 Giugno' %}selected{% endif %}>Domenica 22
+                Giugno</option>
+            </select>
+          </div>
+
+          <div class="mb-2">
+            <label>Ora inizio</label>
+            <input type="time" name="ora_inizio" class="form-control" value="{{ bozza[2] }}" required>
+          </div>
+          <div class="mb-2">
+            <label>Ora fine</label>
+            <input type="time" name="ora_fine" class="form-control" value="{{ bozza[3] }}" required>
+          </div>
+
+          <div class="mb-2">
+            <label>Nome artista</label>
+            <input type="text" name="nome_artista" class="form-control" value="{{ artisti[bozza[0]][0] }}" required>
+          </div>
+          <div class="mb-2">
+            <label>Numero di artisti</label>
+            <input type="number" name="numero_artisti" min="1" class="form-control" value="{{ bozza[6] }}" required>
+          </div>
+
+          <div class="mb-2">
+            <label>Genere musicale</label>
+            <input type="text" name="genere" class="form-control" value="{{ bozza[8] }}" required>
+          </div>
+          <div class="mb-2">
+            <label>Descrizione</label>
+            <textarea name="descrizione" class="form-control" required>{{ bozza[4] }}</textarea>
+          </div>
+
+          <div class="mb-2">
+            <label>Palco</label>
+            <select name="id_palco" class="form-select" required>
+              {% for palco in palchi %}
+              <option value="{{ palco[0] }}" {% if palco[0]==bozza[10] %}selected{% endif %}>{{ palco[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-2">
+            <label>Visibilità</label>
+            <select name="visibilita" class="form-select" required>
+              <option value="1" {% if bozza[9]==1 %}selected{% endif %}>Pubblica</option>
+              <option value="0" {% if bozza[9]==0 %}selected{% endif %}>Bozza</option>
+            </select>
+          </div>
+
+          <div class="mb-2">
+            <div class="mb-2">
+              <label>Immagine artista</label>
+              <input type="file" name="img_artista" accept="image/jpg, image/png" class="form-control" >
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Salva Modifiche</button>
+          </div>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+
 </div>
 {% endblock %}

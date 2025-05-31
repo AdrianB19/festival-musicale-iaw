@@ -1,21 +1,13 @@
 # import necessari a visualizzazione delle routes, per l'autenticazione, per vedere i moduli
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
-
 from datetime import datetime
-
 from werkzeug.utils import secure_filename
-
 from PIL import Image
-
 import os
 
-from models  import User, Biglietto, Performance, Palco, Immagine
-
-import utenti_dao, biglietti_dao, immagini_dao, performances_dao, palchi_dao
-
-
+from models  import User, Biglietto, Performance, Palco
+import utenti_dao, biglietti_dao, performances_dao, palchi_dao 
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secretpass"
@@ -26,56 +18,36 @@ login_manager.init_app(app)
 
 @app.route('/')
 def home():
-    performances = performances_dao.get_performances_pubbliche_ordinate()
-
-    immagini_performance = {
-        perf[0]: immagini_dao.get_immagini_di_performance(perf[0])
-        for perf in performances
-    }
-
-    # Ricava nome e immagine dell'artista dalla stessa tabella performances
+    performances = performances_dao.get_performances_pubbliche()
+    
     artisti = {
-        perf[0]: (perf[5], perf[7])  # nome_artista, img_artista
-        for perf in performances
-    }
+    perf[0]: (perf[5], perf[7].replace("\\", "/") if perf[7] else None)
+    for perf in performances
+}
 
     return render_template("home.html",
-                           performances=performances,
-                           immagini_performance=immagini_performance,
-                           artisti=artisti)
+                          performances=performances,
+                          artisti=artisti)
 
-
-
-
-# manda al form di login
 @app.route("/login")
 def login():
     return render_template("login.html")
 
-
-# manda alla registrazione
 @app.route("/signup")
 def signup():
     return render_template("signup.html")
 
-
-# manda alla pagina faq
 @app.route("/faq")
 def faq():
     return render_template("faq.html")
 
-
-# manda alla pagina about us
 @app.route("/about")
 def about():
     return render_template("about.html")
 
-
-# manda alla pagina biglietti
 @app.route("/biglietti")
 def biglietti():
     return render_template("biglietti.html")
-
 
 # disconnette l'utente autenticato, protetto con login_required
 @app.route("/logout")
@@ -91,7 +63,6 @@ def logout():
 @app.route("/subscribe", methods=["POST"])
 def subscribe():
 
-    #email dal form
     email = request.form.get('txt_email')
     
     #se non è nel db flash
@@ -108,7 +79,6 @@ def subscribe():
         request.form.get('tipo')
     )
     
-    # messaggio di ok
     flash("Registrazione completata!", "success")
 
     return redirect(url_for('login'))
@@ -125,12 +95,10 @@ def autenticare_utente():
 
     #se l'utente non è nel db errore e rimappo sulla home
     if not utente_db:
-        
         print("Credenziali non valide")
         return redirect(url_for("home"))
         
     else:
-        # creo oggetto user 
         user = User(
             id=utente_db[0],
             nome=utente_db[1],
@@ -141,12 +109,10 @@ def autenticare_utente():
         )
 
         login_user(user)
-
         #salvo l'utente (id + tipo)
         session['id'] = user.id
         session['tipo'] = user.tipo
 
-        #messaggino flash
         flash("Accesso effettuato con successo!","success")
 
         return redirect(url_for("home"))
@@ -157,6 +123,7 @@ POST_IMG_WIDTH = 600  # larghezza fissa immagini
 @app.route("/profilo")
 @login_required
 def profilo():
+
     tipo = session.get('tipo')
 
     if tipo == 'organizzatore':
@@ -167,14 +134,11 @@ def profilo():
         flash("Tipo utente non riconosciuto.", "danger")
         return redirect(url_for("home"))
 
-
-
 #route per profilo partecipante
 @app.route("/profilo_partecipante")
 @login_required
 def profilo_partecipante():
 
-    # se non è un partecipante uso flash (in teoria non dovrebbe mai avere errore)
     if session.get('tipo') != 'partecipante':
 
         flash("Accesso non autorizzato.", "danger")
@@ -186,95 +150,21 @@ def profilo_partecipante():
 
     return render_template("profilo_partecipante.html", biglietti=biglietti)
 
-# profilo organizzatore
 @app.route("/profilo_organizzatore", methods=["GET", "POST"])
 @login_required
 def profilo_organizzatore():
+
     if session.get('tipo') != 'organizzatore':
         flash("Accesso non autorizzato.", "danger")
         return redirect(url_for("home"))
 
-    if request.method == "POST":
-        # Estrai i dati dal form
-        data = request.form.get("data")
-        ora_inizio = request.form.get("ora_inizio")
-        ora_fine = request.form.get("ora_fine")
-        genere = request.form.get("genere")
-        descrizione = request.form.get("descrizione")
-        visibilita = int(request.form.get("visibilita", 0))
-        id_palco = request.form.get("id_palco")
-        nome_artista = request.form.get("nome_artista")
-        numero_artisti = request.form.get("numero_artisti")
-
-        # Validazione base
-        if not all([data, ora_inizio, ora_fine, genere, descrizione, id_palco, nome_artista, numero_artisti]):
-            flash("Errore: tutti i campi devono essere compilati.", "danger")
-            return redirect(url_for("profilo_organizzatore"))
-
-        id_palco = int(id_palco)
-        numero_artisti = int(numero_artisti)
-
-        # Verifica sovrapposizione
-        if performances_dao.verifica_sovrapposizione(data, ora_inizio, ora_fine, id_palco):
-            flash("Errore: performance sovrapposta a un'altra sullo stesso palco.", "danger")
-            return redirect(url_for("profilo_organizzatore"))
-
-        # Salva immagine artista
-        img_artista_file = request.files.get("img_artista")
-        email = current_user.email
-        secondi = int(datetime.now().timestamp())
-
-        if img_artista_file and img_artista_file.filename != "":
-            img = Image.open(img_artista_file)
-            ext = img_artista_file.filename.split(".")[-1]
-        else:
-            img = Image.open("static/images/anonimo.png")
-            ext = "png"
-
-        width, height = img.size
-        new_height = int(height / width * POST_IMG_WIDTH)
-        img.thumbnail((POST_IMG_WIDTH, new_height), Image.Resampling.LANCZOS)
-
-        filename_artista = f"@{email.lower()}-{secondi}_artista.{ext}"
-        path_artista = os.path.join("static", "images", filename_artista)
-        img.save(path_artista)
-        img_artista_url = os.path.join("static", "images", filename_artista)
-
-        # Inserisci performance
-        id_perf = performances_dao.nuova_performance(
-            data, ora_inizio, ora_fine, descrizione,
-            nome_artista, numero_artisti, img_artista_url,
-            genere, visibilita, id_palco, current_user.id
-        )
-
-        # Immagini della performance
-        performance_imgs = request.files.getlist("img_performance[]")
-        for i, file in enumerate(performance_imgs):
-            if file and file.filename != "":
-                img = Image.open(file)
-                ext = file.filename.split(".")[-1]
-                img.thumbnail((POST_IMG_WIDTH, new_height), Image.Resampling.LANCZOS)
-                filename_perf = f"@{email.lower()}-{secondi}_performance_{i}.{ext}"
-                path_perf = os.path.join("static", "images", filename_perf)
-                img.save(path_perf)
-
-                img_url = os.path.join("static", "images", filename_perf)
-                immagini_dao.aggiungi_immagine_performance(id_perf, img_url)
-
-        flash("Performance creata con successo!", "success")
-        return redirect(url_for("profilo_organizzatore"))
-
-    # GET request
+    
     pubblicate = performances_dao.get_performances_pubbliche_organizzatore(current_user.id)
     bozze = performances_dao.get_bozze_organizzatore(current_user.id)
     palchi = palchi_dao.get_palchi()
 
-    immagini_performance = {
-        perf[0]: immagini_dao.get_immagini_di_performance(perf[0]) for perf in pubblicate
-    }
-
     artisti = {
-        perf[0]: (perf[5], perf[6]) for perf in pubblicate  # nome_artista, img_artista
+        perf[0]: (perf[5], perf[7]) for perf in pubblicate + bozze
     }
 
     return render_template(
@@ -282,9 +172,163 @@ def profilo_organizzatore():
         pubblicate=pubblicate,
         bozze=bozze,
         palchi=palchi,
-        immagini_performance=immagini_performance,
         artisti=artisti
     )
+
+@app.route("/nuova_performance", methods=["POST"])
+@login_required
+def nuova_performance():
+    #campi dal form
+    data = request.form.get("data")
+    ora_inizio = request.form.get("ora_inizio")
+    ora_fine = request.form.get("ora_fine")
+    genere = request.form.get("genere")
+    descrizione = request.form.get("descrizione")
+    visibilita = int(request.form.get("visibilita"))
+    id_palco = int(request.form.get("id_palco"))
+    nome_artista = request.form.get("nome_artista")
+    numero_artisti = int(request.form.get("numero_artisti"))
+    uploaded_file = request.files["img_artista"]
+
+    # Validazione campi
+    if not all([data, ora_inizio, ora_fine, genere, descrizione, id_palco, nome_artista, numero_artisti]):
+        flash("Errore: tutti i campi devono essere compilati.", "danger")
+        return redirect(url_for("profilo_organizzatore"))
+
+    if performances_dao.artista_esiste(nome_artista):
+        flash("Errore: esiste già una performance con questo nome artista.", "danger")
+        return redirect(url_for("profilo_organizzatore"))
+
+    if visibilita == 1:
+        if performances_dao.verifica_sovrapposizione(data, ora_inizio, ora_fine, id_palco):
+            flash("Errore: performance sovrapposta a un'altra sullo stesso palco.", "danger")
+            return redirect(url_for("profilo_organizzatore"))
+
+    # Estensioni accettate e resize immagine
+    POST_IMG_WIDTH = 600
+    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+    img = Image.open(uploaded_file)
+    ext = uploaded_file.filename.rsplit(".", 1)[-1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        flash("Errore: solo immagini PNG o JPG sono accettate.", "danger")
+        return redirect(url_for("profilo_organizzatore"))
+
+    width, height = img.size
+    new_height = height /width *POST_IMG_WIDTH
+    size = POST_IMG_WIDTH, new_height
+    img.thumbnail(size, Image.Resampling.LANCZOS)
+    secondi = int(datetime.now().timestamp())
+    safe_nome_artista = nome_artista.lower().replace(" ", "_")
+    img.save(f"static/images/@{safe_nome_artista}-{secondi}.{ext}")
+    nuovo_nome_foto = f"images/@{safe_nome_artista}-{secondi}.{ext}"
+
+
+    performances_dao.nuova_performance(
+        data, ora_inizio, ora_fine, descrizione,
+        nome_artista, numero_artisti, nuovo_nome_foto,
+        genere, visibilita, id_palco, current_user.id
+    )
+
+    flash("Performance creata con successo!", "success")
+    return redirect(url_for("profilo_organizzatore"))
+
+
+@app.route("/pubblica_bozza/<int:id>", methods=["POST"])
+@login_required
+def pubblica_bozza(id):
+
+    bozza = performances_dao.get_performance_by_id(id)
+
+    # Controlla che esista
+    if not bozza:
+        flash("Bozza non trovata.", "danger")
+        return redirect(url_for("profilo_organizzatore"))
+
+    data = bozza[1]
+    ora_inizio = bozza[2]
+    ora_fine = bozza[3]
+    id_palco = bozza[10]
+
+    if performances_dao.verifica_sovrapposizione(data, ora_inizio, ora_fine, id_palco):
+
+        flash("Errore: la bozza si sovrappone a un'altra performance pubblicata.", "danger")
+
+        return redirect(url_for("profilo_organizzatore"))
+
+    # Pubblica (is_visibile = 1)
+    performances_dao.pubblica_performance(id)
+
+    flash("Bozza pubblicata con successo!", "success")
+    return redirect(url_for("profilo_organizzatore"))
+
+@app.route("/modifica_bozza/<int:id>", methods=["GET", "POST"])
+@login_required
+def modifica_bozza(id):
+    bozza = performances_dao.get_performance_by_id(id)
+
+    if not bozza:
+        flash("Bozza non trovata", "danger")
+        return redirect(url_for("profilo_organizzatore"))
+
+    # Campi dal form
+    data = request.form.get("data")
+    ora_inizio = request.form.get("ora_inizio")
+    ora_fine = request.form.get("ora_fine")
+    genere = request.form.get("genere")
+    descrizione = request.form.get("descrizione")
+    visibilita = int(request.form.get("visibilita"))
+    id_palco = int(request.form.get("id_palco"))
+    nome_artista = request.form.get("nome_artista")
+    numero_artisti = int(request.form.get("numero_artisti"))
+    uploaded_file = request.files.get("img_artista")
+
+    # Validazione
+    if not all([data, ora_inizio, ora_fine, genere, descrizione, id_palco, nome_artista, numero_artisti]):
+        flash("Errore: tutti i campi devono essere compilati.", "danger")
+        return redirect(url_for("profilo_organizzatore"))
+
+    # Gestione immagine
+    if uploaded_file and uploaded_file.filename != "":
+        ext = uploaded_file.filename.rsplit(".", 1)[-1].lower()
+        ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+
+        if ext not in ALLOWED_EXTENSIONS:
+            flash("Errore: solo immagini PNG o JPG sono accettate.", "danger")
+            return redirect(url_for("profilo_organizzatore"))
+
+        img = Image.open(uploaded_file)
+        POST_IMG_WIDTH = 600
+        width, height = img.size
+        new_height = height / width * POST_IMG_WIDTH
+        size = POST_IMG_WIDTH, new_height
+
+        img.thumbnail(size, Image.Resampling.LANCZOS)
+        secondi = int(datetime.now().timestamp())
+        safe_nome_artista = nome_artista.lower().replace(" ", "_")
+        path_salvato = f"static/images/@{safe_nome_artista}-{secondi}.{ext}"
+        img.save(path_salvato)
+        img_artista_url = f"images/@{safe_nome_artista}-{secondi}.{ext}"
+    else:
+        img_artista_url = bozza["img_artista"]  
+    # Salvataggio su DB
+    performances_dao.aggiorna_bozza(
+        id,
+        data,
+        ora_inizio,
+        ora_fine,
+        descrizione,
+        nome_artista,
+        numero_artisti,
+        img_artista_url,
+        genere,
+        visibilita,
+        id_palco,
+    )
+
+    flash("Bozza aggiornata con successo!", "success")
+    return redirect(url_for("profilo_organizzatore"))
+
+
 
 # carica utente dal db in base al suo id
 @login_manager.user_loader

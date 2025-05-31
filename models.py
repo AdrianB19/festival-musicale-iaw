@@ -39,9 +39,3 @@ class Palco:
     def __init__(self, id, nome):
         self.id = id
         self.nome = nome
-
-class Immagine:
-    def __init__(self, id, id_performance, path):
-        self.id = id
-        self.id_performance = id_performance
-        self.path = path 
