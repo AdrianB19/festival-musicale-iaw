@@ -1,13 +1,62 @@
 {% extends "base.html" %}
-
-{% block titolo %}About Us{% endblock %}
+{% block titolo %}Acquista Biglietti - Torino Soundwave{% endblock %}
 
 {% block contenuto %}
-<h1>FAQs</h1>
-<ul>
-  <li><strong>Come posso acquistare un biglietto?</strong> Vai nella sezione Biglietti dopo aver fatto login.</li>
-  <li><strong>Posso modificare le mie performance?</strong> Solo se sei un organizzatore.</li>
-  ...
-</ul>
+<div class="container mt-5">
+  <h2 class="mb-4">Acquista un Biglietto</h2>
 
+  <!-- Giornaliero -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">🎫 Biglietto Giornaliero - 25€</h5>
+      <p class="card-text">Valido per un solo giorno a scelta.</p>
+      <form method="POST" action="{{ url_for('acquista_biglietto') }}">
+        <input type="hidden" name="tipo" value="giornaliero">
+        <div class="mb-3">
+          <label for="giorno_singolo" class="form-label">Seleziona il giorno:</label>
+          <select name="start_date" id="giorno_singolo" class="form-select" required>
+            <option value="">-- Seleziona --</option>
+            <option value="Venerdì 20 Giugno">Venerdì 20 Giugno</option>
+            <option value="Sabato 21 Giugno">Sabato 21 Giugno</option>
+            <option value="Domenica 22 Giugno">Domenica 22 Giugno</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Acquista</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Due Giorni -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">🎟️ Biglietto Due Giorni - 40€</h5>
+      <p class="card-text">Valido per due giorni consecutivi.</p>
+      <form method="POST" action="{{ url_for('acquista_biglietto') }}">
+        <input type="hidden" name="tipo" value="due_giorni">
+        <div class="mb-3">
+          <label for="due_giorni" class="form-label">Seleziona i giorni:</label>
+          <select name="start_date" id="due_giorni" class="form-select" required>
+            <option value="">-- Seleziona --</option>
+            <option value="Venerdì 20 Giugno / Sabato 21 Giugno">Venerdì + Sabato</option>
+            <option value="Sabato 21 Giugno / Domenica 22 Giugno">Sabato + Domenica</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Acquista</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Full Pass -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">🎫 Full Pass - 60€</h5>
+      <p class="card-text">Accesso completo a tutti i 3 giorni del festival.</p>
+      <form method="POST" action="{{ url_for('acquista_biglietto') }}">
+        <input type="hidden" name="tipo" value="full_pass">
+        <input type="hidden" name="start_date" value="Venerdì 20 Giugno">
+        <button type="submit" class="btn btn-primary">Acquista</button>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}
