@@ -10,9 +10,22 @@
     <div class="card-body">
       <h5 class="card-title">🎫 Biglietto Giornaliero - 25€</h5>
       <p class="card-text">Valido per un solo giorno a scelta.</p>
+
+      {% for giorno, info in dati_biglietti['giornaliero'].items() %}
+        <div class="mb-2">
+          <strong>{{ giorno }}:</strong>
+          {{ info.percentuale }}% venduti - {{ info.rimanenti }} rimasti
+          <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: {{ info.percentuale }}%;" aria-valuenow="{{ info.percentuale }}" aria-valuemin="0" aria-valuemax="100">
+              {{ info.percentuale }}%
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
       <form method="POST" action="{{ url_for('acquista_biglietto') }}">
         <input type="hidden" name="tipo" value="giornaliero">
-        <div class="mb-3">
+        <div class="mb-3 mt-3">
           <label for="giorno_singolo" class="form-label">Seleziona il giorno:</label>
           <select name="start_date" id="giorno_singolo" class="form-select" required>
             <option value="">-- Seleziona --</option>
@@ -31,14 +44,27 @@
     <div class="card-body">
       <h5 class="card-title">🎟️ Biglietto Due Giorni - 40€</h5>
       <p class="card-text">Valido per due giorni consecutivi.</p>
+
+      {% for combo, info in dati_biglietti['due_giorni'].items() %}
+        <div class="mb-2">
+          <strong>{{ combo.replace('_', ' + ') }}:</strong>
+          {{ info.percentuale }}% venduti - {{ info.rimanenti }} rimasti
+          <div class="progress">
+            <div class="progress-bar bg-success" role="progressbar" style="width: {{ info.percentuale }}%;" aria-valuenow="{{ info.percentuale }}" aria-valuemin="0" aria-valuemax="100">
+              {{ info.percentuale }}%
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
       <form method="POST" action="{{ url_for('acquista_biglietto') }}">
         <input type="hidden" name="tipo" value="due_giorni">
-        <div class="mb-3">
+        <div class="mb-3 mt-3">
           <label for="due_giorni" class="form-label">Seleziona i giorni:</label>
           <select name="start_date" id="due_giorni" class="form-select" required>
             <option value="">-- Seleziona --</option>
-            <option value="Venerdì 20 Giugno / Sabato 21 Giugno">Venerdì + Sabato</option>
-            <option value="Sabato 21 Giugno / Domenica 22 Giugno">Sabato + Domenica</option>
+            <option value="Venerdì 20 Giugno">Venerdì + Sabato</option>
+            <option value="Sabato 21 Giugno">Sabato + Domenica</option>
           </select>
         </div>
         <button type="submit" class="btn btn-primary">Acquista</button>
@@ -50,13 +76,25 @@
   <div class="card mb-3">
     <div class="card-body">
       <h5 class="card-title">🎫 Full Pass - 60€</h5>
-      <p class="card-text">Accesso completo a tutti i 3 giorni del festival.</p>
+      <p class="card-text">Accesso completo a tutti e 3 i giorni del festival.</p>
+
+      {% set full = dati_biglietti['full_pass']['all'] %}
+      <div class="mb-2">
+        <strong>Tutti i giorni:</strong> {{ full.percentuale }}% venduti - {{ full.rimanenti }} rimasti
+        <div class="progress">
+          <div class="progress-bar bg-danger" role="progressbar" style="width: {{ full.percentuale }}%;" aria-valuenow="{{ full.percentuale }}" aria-valuemin="0" aria-valuemax="100">
+            {{ full.percentuale }}%
+          </div>
+        </div>
+      </div>
+
       <form method="POST" action="{{ url_for('acquista_biglietto') }}">
         <input type="hidden" name="tipo" value="full_pass">
         <input type="hidden" name="start_date" value="Venerdì 20 Giugno">
-        <button type="submit" class="btn btn-primary">Acquista</button>
+        <button type="submit" class="btn btn-primary mt-3">Acquista</button>
       </form>
     </div>
   </div>
 </div>
 {% endblock %}
+

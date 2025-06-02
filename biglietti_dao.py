@@ -1,46 +1,88 @@
 import sqlite3
 
-# query che aggiunge un biglietto nel db
-def nuovo_biglietto(id_utente, tipo, giorni):
+def nuovo_biglietto(tipo, id_utente, start_date):
 
-    sql = "INSERT INTO biglietti (id_utente, tipo, giorni) VALUES (?, ?, ?)"
+    sql = "INSERT INTO biglietti (tipo, id_utente, start_date) VALUES (?, ?, ?)"
 
     conn = sqlite3.connect("soundwave.db")
+
     cursor = conn.cursor()
-    cursor.execute(sql, (id_utente, tipo, giorni))
-    
+    cursor.execute(sql,(tipo, id_utente, start_date))
+
     conn.commit()
+
     cursor.close()
     conn.close()
 
+# query che calcola numero biglietti per ven
 
 
-# query che conta il numero di biglietti per giorno
-def count_biglietti_giornalieri(giorno):
+# query che calcola numero biglietti per sab
 
-    sql = "SELECT COUNT(*) FROM biglietti WHERE giorni LIKE ?"
-
+def biglietti_dom():
+    sql = """
+        SELECT COUNT(*) 
+        FROM biglietti 
+        WHERE tipo = 'full_pass' 
+            OR (tipo = 'due_giorni' AND start_date = 'Sabato 21 Giugno / Domenica 22 Giugno')
+            OR (tipo = 'giornaliero' AND start_date = 'Domenica 22 Giugno')
+    """
+    
     conn = sqlite3.connect("soundwave.db")
     cursor = conn.cursor()
-    cursor.execute(sql, (f"%{giorno}%",))
-    count = cursor.fetchone()[0] # estrae prima colonna prima riga 
+    cursor.execute(sql)
+    
+    count = cursor.fetchone()[0]
 
     cursor.close()
     conn.close()
 
     return count
 
-def get_biglietto_by_partecipante(id_partecipante):
+# biglietti_dao.py
 
-    sql = "SELECT * FROM biglietti WHERE id_utente = ?"
-
+def count_biglietti(tipo, start_date=None):
     conn = sqlite3.connect("soundwave.db")
     cursor = conn.cursor()
-    cursor.execute(sql, (id_partecipante,))
 
-    biglietto = cursor.fetchone()
+    if tipo == 'full_pass':
+        sql = "SELECT COUNT(*) FROM biglietti WHERE tipo = 'full_pass'"
+        cursor.execute(sql)
+    elif tipo == 'due_giorni' and start_date:
+        sql = "SELECT COUNT(*) FROM biglietti WHERE tipo = 'due_giorni' AND start_date = ?"
+        cursor.execute(sql, (start_date,))
+    elif tipo == 'giornaliero' and start_date:
+        sql = "SELECT COUNT(*) FROM biglietti WHERE tipo = 'giornaliero' AND start_date = ?"
+        cursor.execute(sql, (start_date,))
+    else:
+        return 0
+
+    count = cursor.fetchone()[0]
 
     cursor.close()
     conn.close()
+    return count
 
-    return biglietto
+def count_biglietti_per_giorno(giorno):
+    conn = sqlite3.connect("soundwave.db")
+    cursor = conn.cursor()
+
+    sql = """
+    SELECT COUNT(*) FROM biglietti
+    WHERE 
+        (tipo = 'giornaliero' AND start_date = ?)
+        OR 
+        (tipo = 'due_giorni' AND start_date LIKE ?)
+        OR 
+        (tipo = 'full_pass' AND ? = 'Venerdì 20 Giugno')
+    """
+
+    # per "LIKE" serve includere il giorno nella stringa
+    cursor.execute(sql, (giorno, f"%{giorno}%", giorno))
+    count = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+    return count
+
+

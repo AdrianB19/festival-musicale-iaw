@@ -34,11 +34,9 @@
 
         {% endif %}
         <li><a href="{{ url_for('home') }}" class="nav-link px-2 link-secondary">Home</a></li>
-
-        {% if session['tipo'] != 'organizzatore' %}
+        {% if session['tipo'] == 'partecipante' %}
+        <li><a href="{{ url_for('biglietti') }}" class="nav-link px-2">Acquista</a></li>
         {% endif %}
-
-        <li><a href="{{ url_for('biglietti') }}" class="nav-link px-2">Biglietti</a></li>
         <li><a href="{{ url_for('faq') }}" class="nav-link px-2">FAQs</a></li>
         <li><a href="{{ url_for('about') }}" class="nav-link px-2">About Us</a></li>
       </ul>
@@ -78,7 +76,9 @@
   </div>
 
   <!-- CONTENUTO DELLA PAGINA -->
-  {% block contenuto %}{% endblock %}
+  {% block contenuto %}
+  
+  {% endblock %}
 
   <!-- FOOTER -->
   <div class="container">

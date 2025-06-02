@@ -1,7 +1,7 @@
 # import necessari a visualizzazione delle routes, per l'autenticazione, per vedere i moduli
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 from PIL import Image
 import os
@@ -21,13 +21,14 @@ POST_IMG_WIDTH = 600
 
 @app.route('/')
 def home():
+    #prendo le performances
     performances = performances_dao.get_performances_pubbliche()
+    #dalle perforances faccio un dizionario con id - nome artista ed url_immagine
     
     artisti = {
-    perf[0]: (perf[5], perf[7].replace("\\", "/") if perf[7] else None)
+    perf[0]: (perf[5], perf[6])
     for perf in performances
-}
-
+    }
     return render_template("home.html",
                           performances=performances,
                           artisti=artisti)
@@ -50,7 +51,7 @@ def about():
 
 @app.route("/biglietti")
 def biglietti():
-    return render_template("biglietti.html")
+    return render_template("biglietti2.html")
 
 # disconnette l'utente autenticato, protetto con login_required
 @app.route("/logout")
@@ -163,7 +164,7 @@ def profilo_organizzatore():
     palchi = palchi_dao.get_palchi()
 
     artisti = {
-        perf[0]: (perf[5], perf[7]) for perf in pubblicate + bozze
+        perf[0]: (perf[5], perf[6]) for perf in pubblicate + bozze
     }
 
     return render_template(
@@ -186,18 +187,37 @@ def nuova_performance():
     visibilita = int(request.form.get("visibilita"))
     id_palco = int(request.form.get("id_palco"))
     nome_artista = request.form.get("nome_artista")
-    numero_artisti = int(request.form.get("numero_artisti"))
     uploaded_file = request.files["img_artista"]
 
     # Validazione campi
-    if not all([data, ora_inizio, ora_fine, genere, descrizione, id_palco, nome_artista, numero_artisti]):
+    if not all([data, ora_inizio, ora_fine, genere, descrizione, id_palco, nome_artista]):
         flash("Errore: tutti i campi devono essere compilati.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
     if performances_dao.artista_esiste(nome_artista):
         flash("Errore: esiste già una performance con questo nome artista.", "danger")
         return redirect(url_for("profilo_organizzatore"))
+    
+    # Conversione in datetime 
+    inizio_dt = datetime.strptime(ora_inizio, "%H:%M")
+    fine_dt = datetime.strptime(ora_fine, "%H:%M")
 
+    # Se fine è prima di inizio, considera che passa la mezzanotte
+    if fine_dt <= inizio_dt:
+        flash("L'ora di inizio deve essere precedente all'ora di fine.", "danger")
+        return redirect(url_for("profilo_organizzatore"))
+
+    # Controllo che inizio sia dopo le 14:00
+    if inizio_dt.time() < datetime.strptime("14:00", "%H:%M").time():
+        flash("L'ora di inizio deve essere dopo le 14:00.", "danger")
+        return redirect(url_for("profilo_organizzatore"))
+
+    # Controllo durata massima
+    durata = fine_dt - inizio_dt
+    if durata > timedelta(hours=1, minutes=30):
+        flash("La performance non deve durare più di 90 minuti.", "danger")
+        return redirect(url_for("profilo_organizzatore"))
+    
     if visibilita == 1:
         if performances_dao.verifica_sovrapposizione(data, ora_inizio, ora_fine, id_palco):
             flash("Errore: performance sovrapposta a un'altra sullo stesso palco.", "danger")
@@ -220,7 +240,7 @@ def nuova_performance():
 
     performances_dao.nuova_performance(
         data, ora_inizio, ora_fine, descrizione,
-        nome_artista, numero_artisti, nuovo_nome_foto,
+        nome_artista, nuovo_nome_foto,
         genere, visibilita, id_palco, current_user.id
     )
 
@@ -230,28 +250,25 @@ def nuova_performance():
 @app.route("/pubblica_bozza/<int:id>", methods=["POST"])
 @login_required
 def pubblica_bozza(id):
-
     bozza = performances_dao.get_performance_by_id(id)
 
-    # Controlla che esista
     if not bozza:
         flash("Bozza non trovata.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
-    data = bozza[1]
-    ora_inizio = bozza[2]
-    ora_fine = bozza[3]
-    id_palco = bozza[10]
+    data = bozza["data"]
+    ora_inizio = bozza["ora_inizio"]
+    ora_fine = bozza["ora_fine"]
+    id_palco = bozza["id_palco"]
+    nome_artista = bozza["nome_artista"]
 
-    if performances_dao.verifica_sovrapposizione(data, ora_inizio, ora_fine, id_palco):
-
-        flash("Errore: la bozza si sovrappone a un'altra performance pubblicata.", "danger")
-
+    # Controllo sovrapposizione
+    sovrapposte = performances_dao.verifica_sovrapposizione(data, ora_inizio, ora_fine, id_palco)
+    if sovrapposte:
+        flash("Errore: la performance si sovrappone a un'altra già pubblicata sullo stesso palco.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
-    # Pubblica (is_visibile = 1)
     performances_dao.pubblica_performance(id)
-
     flash("Bozza pubblicata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
 
@@ -263,26 +280,41 @@ def modifica_bozza(id):
     if not bozza:
         flash("Bozza non trovata", "danger")
         return redirect(url_for("profilo_organizzatore"))
-
+    
+    # dati dal form
     data = request.form.get("data")
     ora_inizio = request.form.get("ora_inizio")
     ora_fine = request.form.get("ora_fine")
     genere = request.form.get("genere")
     descrizione = request.form.get("descrizione")
-    visibilita = int(request.form.get("visibilita"))
+    visibilita = 0
     id_palco = int(request.form.get("id_palco"))
     nome_artista = request.form.get("nome_artista")
-    numero_artisti = int(request.form.get("numero_artisti"))
     uploaded_file = request.files.get("img_artista")
 
-    if not all([data, ora_inizio, ora_fine, genere, descrizione, id_palco, nome_artista, numero_artisti]):
+    if not all([data, ora_inizio, ora_fine, genere, descrizione, id_palco, nome_artista]):
         flash("Errore: tutti i campi devono essere compilati.", "danger")
         return redirect(url_for("profilo_organizzatore"))
+    
+    # Controlli base: ora inizio < ora fine && ora inizio >= 14:00
+    inizio_dt = datetime.strptime(ora_inizio, "%H:%M")
+    fine_dt = datetime.strptime(ora_fine, "%H:%M")
 
+    if fine_dt <= inizio_dt:
+        flash("L'ora di inizio deve essere precedente all'ora di fine.", "danger")
+        return redirect(url_for("profilo_organizzatore"))
+
+    if inizio_dt.time() < datetime.strptime("14:00", "%H:%M").time():
+        flash("L'ora di inizio deve essere dopo le 14:00.", "danger")
+        return redirect(url_for("profilo_organizzatore"))
+
+    if (fine_dt - inizio_dt) > timedelta(minutes=90):
+        flash("La performance non deve durare più di 90 minuti.", "danger")
+        return redirect(url_for("profilo_organizzatore"))
+
+    # Gestione immagine
     if uploaded_file and uploaded_file.filename != "":
         ext = uploaded_file.filename.rsplit(".", 1)[-1].lower()
-        
-
         if ext not in ALLOWED_EXTENSIONS:
             flash("Errore: solo immagini PNG o JPG sono accettate.", "danger")
             return redirect(url_for("profilo_organizzatore"))
@@ -290,34 +322,41 @@ def modifica_bozza(id):
         img = Image.open(uploaded_file)
         width, height = img.size
         new_height = height / width * POST_IMG_WIDTH
-        size = POST_IMG_WIDTH, new_height
-
-        img.thumbnail(size, Image.Resampling.LANCZOS)
-        secondi = int(datetime.now().timestamp())
-        safe_nome_artista = nome_artista.lower().replace(" ", "_")
-        path_salvato = f"static/images/@{safe_nome_artista}-{secondi}.{ext}"
+        img.thumbnail((POST_IMG_WIDTH, new_height), Image.Resampling.LANCZOS)
+        timestamp = int(datetime.now().timestamp())
+        safe_nome = nome_artista.lower().replace(" ", "_")
+        path_salvato = f"static/images/@{safe_nome}-{timestamp}.{ext}"
         img.save(path_salvato)
-        img_artista_url = f"images/@{safe_nome_artista}-{secondi}.{ext}"
+        img_artista_url = f"images/@{safe_nome}-{timestamp}.{ext}"
     else:
-        img_artista_url = bozza["img_artista"]  
-    # Salvataggio su DB
+        img_artista_url = bozza["img_artista"]
+
     performances_dao.aggiorna_bozza(
-        id,
-        data,
-        ora_inizio,
-        ora_fine,
-        descrizione,
-        nome_artista,
-        numero_artisti,
-        img_artista_url,
-        genere,
-        visibilita,
-        id_palco,
+        id, data, ora_inizio, ora_fine, descrizione,
+        nome_artista, img_artista_url, genere, visibilita, id_palco
     )
 
     flash("Bozza aggiornata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
 
+
+@app.route("/acquista_biglietto", methods=["POST"])
+@login_required
+def acquista_biglietto():
+    #prendo i campi dal form
+    if session.get('tipo') != 'partecipante':
+        flash("Errore: sei un organizzatore, non puoi comprare un biglietto", "danger")
+        return redirect(url_for("biglietti"))
+    
+    start_date = request.form("start_date")
+    tipo = request.form("tipo")
+    id_utente = current_user.id
+
+    if not all([start_date, tipo, id_utente]):
+        flash("Errore: tutti i campi devono essere compilati.", "danger")
+        return redirect(url_for("profilo_organizzatore"))
+    
+    #verifica che l'utente non abbia già acquistato un biglietto
 # carica utente dal db in base al suo id
 @login_manager.user_loader
 def load_user(user_id):

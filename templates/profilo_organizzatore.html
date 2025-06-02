@@ -19,7 +19,7 @@ Profilo Organizzatore
           <!-- Immagine artista a sinistra centrata -->
           <div class="col-md-3 d-flex align-items-center justify-content-center p-3">
             <img src="{{ url_for('static', filename=artisti[perf[0]][1]) }}" class="rounded-circle"
-              style="width: 80px; height: 80px; object-fit: cover;" alt="Foto artista {{ artisti[perf[0]][0] }}">
+              style="width: 80px; height: 80px; object-fit: cover;" alt="Foto artista {{ artisti[perf[0]][1] }}">
           </div>
           <!-- Dettagli performance pubblicata -->
           <div class="col-md-9">
@@ -32,8 +32,8 @@ Profilo Organizzatore
                 {{ (perf[3][:2]|int - perf[2][:2]|int) * 60 + (perf[3][3:5]|int - perf[2][3:5]|int) }} minuti
               </p>
               <p class="card-text"><strong>Descrizione:</strong> {{ perf[4] }}</p>
-              <p class="card-text"><strong>Genere:</strong> {{ perf[8] }}</p>
-              <p class="card-text"><strong>Palco:</strong> {{ perf[10] }}</p>
+              <p class="card-text"><strong>Genere:</strong> {{ perf[7] }}</p>
+              <p class="card-text"><strong>Palco:</strong> {{ perf[8] }}</p>
             </div>
           </div>
 
@@ -70,8 +70,8 @@ Profilo Organizzatore
                 {{ (bozza[3][:2]|int - bozza[2][:2]|int) * 60 + (bozza[3][3:5]|int - bozza[2][3:5]|int) }} minuti
               </p>
               <p class="card-text"><strong>Descrizione:</strong> {{ bozza[4] }}</p>
-              <p class="card-text"><strong>Genere:</strong> {{ bozza[8] }}</p>
-              <p class="card-text"><strong>Palco:</strong> {{ bozza[10] }}</p>
+              <p class="card-text"><strong>Genere:</strong> {{ bozza[5] }}</p>
+              <p class="card-text"><strong>Palco:</strong> {{ bozza[8] }}</p>
 
               <div class="mt-3">
                 <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
@@ -113,9 +113,9 @@ Profilo Organizzatore
           <div class="mb-2">
             <label for="data">Giorno</label>
             <select name="data" class="form-select" required>
-              <option value="Venerdì 20 Giugno">Venerdì 20 Giugno</option>
-              <option value="Sabato 21 Giugno">Sabato 21 Giugno</option>
-              <option value="Domenica 22 Giugno">Domenica 22 Giugno</option>
+              <option value="2025-06-20">Venerdì 20 Giugno</option>
+              <option value="2025-06-21">Sabato 21 Giugno</option>
+              <option value="2025-06-22">Domenica 22 Giugno</option>
             </select>
           </div>
 
@@ -131,10 +131,6 @@ Profilo Organizzatore
           <div class="mb-2">
             <label>Nome artista</label>
             <input type="text" name="nome_artista" class="form-control" required>
-          </div>
-          <div class="mb-2">
-            <label>Numero di artisti</label>
-            <input type="number" name="numero_artisti" min="1" class="form-control" required>
           </div>
 
           <div class="mb-2">
@@ -192,11 +188,11 @@ Profilo Organizzatore
           <div class="mb-2">
             <label for="data">Giorno</label>
             <select name="data" class="form-select" required>
-              <option value="Venerdì 20 Giugno" {% if bozza[1]=='Venerdì 20 Giugno' %} selected{% endif %}>Venerdì
+              <option value="2025-06-20" {% if bozza[1]=='Venerdì 20 Giugno' %} selected{% endif %}>Venerdì
                 20 Giugno</option>
-              <option value="Sabato 21 Giugno" {% if bozza[1]=='Sabato 21 Giugno' %}selected{% endif %}>Sabato 21 Giugno
+              <option value="2025-06-21" {% if bozza[1]=='Sabato 21 Giugno' %}selected{% endif %}>Sabato 21 Giugno
               </option>
-              <option value="Domenica 22 Giugno" {% if bozza[1]=='Domenica 22 Giugno' %}selected{% endif %}>Domenica 22
+              <option value="2025-06-22" {% if bozza[1]=='Domenica 22 Giugno' %}selected{% endif %}>Domenica 22
                 Giugno</option>
             </select>
           </div>
@@ -213,10 +209,6 @@ Profilo Organizzatore
           <div class="mb-2">
             <label>Nome artista</label>
             <input type="text" name="nome_artista" class="form-control" value="{{ artisti[bozza[0]][0] }}" required>
-          </div>
-          <div class="mb-2">
-            <label>Numero di artisti</label>
-            <input type="number" name="numero_artisti" min="1" class="form-control" value="{{ bozza[6] }}" required>
           </div>
 
           <div class="mb-2">
@@ -236,19 +228,10 @@ Profilo Organizzatore
               {% endfor %}
             </select>
           </div>
-
-          <div class="mb-2">
-            <label>Visibilità</label>
-            <select name="visibilita" class="form-select" required>
-              <option value="1" {% if bozza[9]==1 %}selected{% endif %}>Pubblica</option>
-              <option value="0" {% if bozza[9]==0 %}selected{% endif %}>Bozza</option>
-            </select>
-          </div>
-
           <div class="mb-2">
             <div class="mb-2">
               <label>Immagine artista</label>
-              <input type="file" name="img_artista" accept="image/jpg, image/png" class="form-control" >
+              <input type="file" name="img_artista" accept="image/jpg, image/png" class="form-control">
             </div>
           </div>
           <div class="modal-footer">

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block titolo %}Acquista Biglietti - Torino Soundwave{% endblock %}
+
+
+{% block contenuto %}
+<form method="POST" action="{{ url_for('acquista_biglietto') }}">
+
+    <div>
+        <h3>Biglietto giornaliero</h3>
+        <label for="giorno_singolo" class="form-label">Seleziona il giorno:</label>
+        <select name="start_date" id="giorno_singolo" class="form-select" required>
+            <option value="">-- Seleziona --</option>
+            <option value="Venerdì 20 Giugno">Venerdì 20 Giugno</option>
+            <option value="Sabato 21 Giugno">Sabato 21 Giugno</option>
+            <option value="Domenica 22 Giugno">Domenica 22 Giugno</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Acquista</button>
+
+
+    <div>
+        <h3>Biglietto 2 giorni</h3>
+        <strong>Nota bene: il biglietto è valido per due giorni consecutivi.</strong><br>
+        <label for="giorno_singolo" class="form-label">Seleziona i giorni:</label>
+        <select name="start_date" id="giorno_singolo" class="form-select" required>
+            <option value="">-- Seleziona --</option>
+            <option value="2025-06-20">Venerdì 20 Giugno e Sabato 21 Giugno</option>
+            <option value="2025-06-21">Sabato 21 Giugno e Domenica 22 Giugno</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Acquista</button>
+
+
+    <div>
+        <h3>Biglietto full-pass</h3>
+        <strong>Il biglietto è valido per tutti e tre i giorni del Festival.</strong><br>
+        <label for="giorno_singolo" class="form-label">Seleziona il giorno:</label>
+        <select name="start_date" id="giorno_singolo" class="form-select" required>
+            <option value="">-- Seleziona --</option>
+            <option value="Venerdì 20 Giugno">Venerdì 20 Giugno</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Acquista</button>
+
+
+
+</form>
+
+{% endblock %}

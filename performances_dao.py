@@ -1,15 +1,15 @@
 import sqlite3
 
 # aggiunge performance nel db
-def nuova_performance(data, ora_inizio, ora_fine,  descrizione, nome_artista, numero_artisti, img_artista, genere, is_visibile, id_palco, id_organizzatore):
+def nuova_performance(data, ora_inizio, ora_fine,  descrizione, nome_artista, img_artista, genere, is_visibile, id_palco, id_organizzatore):
 
     sql = """INSERT INTO performances (data, ora_inizio, ora_fine, descrizione, 
-            nome_artista, numero_artisti, img_artista, genere, is_visibile, 
-            id_palco, id_organizzatore) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+            nome_artista,img_artista, genere, is_visibile, 
+            id_palco, id_organizzatore) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
     
     conn = sqlite3.connect("soundwave.db")
     cursor = conn.cursor()
-    cursor.execute(sql, (data, ora_inizio, ora_fine,  descrizione, nome_artista, numero_artisti, img_artista, genere, is_visibile, id_palco, id_organizzatore))
+    cursor.execute(sql, (data, ora_inizio, ora_fine,  descrizione, nome_artista,img_artista, genere, is_visibile, id_palco, id_organizzatore))
 
     conn.commit()
 
@@ -23,17 +23,24 @@ def nuova_performance(data, ora_inizio, ora_fine,  descrizione, nome_artista, nu
 # performances pubbliche ordinate per giorno decrescente ed ora decrescente
 def get_performances_pubbliche():
     sql = """
-        SELECT * FROM performances
-        WHERE is_visibile = 1
+        SELECT
+            p1.id,
+            p1.data,
+            p1.ora_inizio,
+            p1.ora_fine,
+            p1.descrizione,
+            p1.nome_artista,
+            p1.img_artista,
+            p1.genere,
+            p2.nome AS nome_palco,
+            p1.id_organizzatore
+        FROM performances p1
+        JOIN palchi p2 ON p1.id_palco = p2.id
+        WHERE p1.is_visibile = 1
         ORDER BY
-            CASE data
-                WHEN 'Venerdì 20 Giugno' THEN 1
-                WHEN 'Sabato 21 Giugno' THEN 2
-                WHEN 'Domenica 22 Giugno' THEN 3
-                ELSE 4
-            END DESC,
-            ora_inizio DESC,
-            ora_fine DESC
+            p1.data ASC,
+            p1.ora_inizio ASC,
+            p1.ora_fine ASC
     """
 
     conn = sqlite3.connect("soundwave.db")
@@ -72,17 +79,25 @@ def verifica_sovrapposizione(data, ora_inizio, ora_fine, id_palco):
 # performances ordinate da far vedere nell'area organizzatore relative all'org
 def get_performances_pubbliche_organizzatore(id_organizzatore):
     sql = """
-        SELECT * FROM performances
-        WHERE is_visibile = 1 AND id_organizzatore = ?
-        ORDER BY
-            CASE data
-                WHEN 'Venerdì 20 Giugno' THEN 1
-                WHEN 'Sabato 21 Giugno' THEN 2
-                WHEN 'Domenica 22 Giugno' THEN 3
-                ELSE 4
-            END DESC,
-            ora_inizio DESC
-    """
+    SELECT
+        p1.id,
+        p1.data,
+        p1.ora_inizio,
+        p1.ora_fine,
+        p1.descrizione,
+        p1.nome_artista,
+        p1.img_artista,
+        p1.genere,
+        p2.nome AS nome_palco,
+        p1.id_organizzatore
+    FROM performances p1
+    JOIN palchi p2 ON p1.id_palco = p2.id
+    WHERE p1.is_visibile = 1 AND id_organizzatore = ?
+    ORDER BY
+        p1.data ASC,
+        p1.ora_inizio ASC,
+        p1.ora_fine ASC
+"""
     conn = sqlite3.connect("soundwave.db")
     cursor = conn.cursor()
     cursor.execute(sql, (id_organizzatore,))
@@ -91,10 +106,28 @@ def get_performances_pubbliche_organizzatore(id_organizzatore):
     conn.close()
     return results
 
-
 # bozze organizzatore
 def get_bozze_organizzatore(id_organizzatore):
-    sql = "SELECT * FROM performances WHERE is_visibile = 0 AND id_organizzatore = ?"
+    sql ="""
+    SELECT
+        p1.id,
+        p1.data,
+        p1.ora_inizio,
+        p1.ora_fine,
+        p1.descrizione,
+        p1.nome_artista,
+        p1.img_artista,
+        p1.genere,
+        p2.nome AS nome_palco,
+        p1.id_organizzatore
+    FROM performances p1
+    JOIN palchi p2 ON p1.id_palco = p2.id
+    WHERE p1.is_visibile = 0 AND id_organizzatore = ?
+    ORDER BY
+        p1.data ASC,
+        p1.ora_inizio ASC,
+        p1.ora_fine ASC
+"""
 
     conn = sqlite3.connect("soundwave.db")
 
@@ -122,7 +155,7 @@ def get_performances_pubbliche_data_palco(data, id_palco):
 
     return results
 
-# eliminare performance
+# eliminare performance se serve
 def elimina_performance(id_performance):
     sql = "DELETE FROM performances WHERE id = ?"
     conn = sqlite3.connect("soundwave.db")
@@ -154,13 +187,13 @@ def get_performance_by_id(id):
 
 # aggiorna bozza
 def aggiorna_bozza(id, data, ora_inizio, ora_fine, descrizione, 
-                   nome_artista, numero_artisti, img_artista_url, 
+                   nome_artista, img_artista_url, 
                    genere, visibilita, id_palco):
     
     sql = """
         UPDATE performances
         SET data = ?, ora_inizio = ?, ora_fine = ?, descrizione = ?, 
-            nome_artista = ?, numero_artisti = ?, img_artista = ?, 
+            nome_artista = ?, img_artista = ?, 
             genere = ?, is_visibile = ?, id_palco = ?
         WHERE id = ?
     """
@@ -168,7 +201,7 @@ def aggiorna_bozza(id, data, ora_inizio, ora_fine, descrizione,
     conn = sqlite3.connect("soundwave.db")
     cursor = conn.cursor()
     cursor.execute(sql, (data, ora_inizio, ora_fine, descrizione,
-                         nome_artista, numero_artisti, img_artista_url,
+                         nome_artista, img_artista_url,
                          genere, visibilita, id_palco, id))
     conn.commit()
     cursor.close()
