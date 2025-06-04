@@ -13,32 +13,34 @@ Profilo Organizzatore
   <div class="row">
     {% for perf in pubblicate %}
     <div class="col-md-6 mb-4">
-      <div class="card">
-        <div class="row g-0 h-100">
-
-          <!-- Immagine artista a sinistra centrata -->
-          <div class="col-md-3 d-flex align-items-center justify-content-center p-3">
-            <img src="{{ url_for('static', filename=artisti[perf[0]][1]) }}" class="rounded-circle"
-              style="width: 80px; height: 80px; object-fit: cover;" alt="Foto artista {{ artisti[perf[0]][1] }}">
-          </div>
-          <!-- Dettagli performance pubblicata -->
-          <div class="col-md-9">
-            <div class="card-body">
-              <h5 class="card-title">{{ perf[5] }}</h5>
-              <p class="card-text"><strong>Artista:</strong> {{ artisti[perf[0]][0] }}</p>
-              <p class="card-text"><strong>Data:</strong> {{ perf[1] }}</p>
-              <p class="card-text"><strong>Ora:</strong> {{ perf[2] }} - {{ perf[3] }}</p>
-              <p class="card-text"><strong>Durata:</strong>
-                {{ (perf[3][:2]|int - perf[2][:2]|int) * 60 + (perf[3][3:5]|int - perf[2][3:5]|int) }} minuti
-              </p>
-              <p class="card-text"><strong>Descrizione:</strong> {{ perf[4] }}</p>
-              <p class="card-text"><strong>Genere:</strong> {{ perf[7] }}</p>
-              <p class="card-text"><strong>Palco:</strong> {{ perf[8] }}</p>
+      <a href="{{ url_for('dettaglio_performance', id=perf[0]) }}" class="text-decoration-none text-dark">
+        <div class="card">
+          <div class="row g-0 h-100">
+            <!-- Immagine artista a sinistra centrata -->
+            <div class="col-md-3 d-flex align-items-center justify-content-center p-3">
+              <img src="{{ url_for('static', filename=artisti[perf[0]][1]) }}" class="rounded-circle"
+                style="width: 80px; height: 80px; object-fit: cover;" alt="Foto artista {{ artisti[perf[0]][1] }}">
             </div>
+            <!-- Dettagli performance pubblicata -->
+            <div class="col-md-9">
+              <div class="card-body">
+                <h5 class="card-title">{{ perf[5] }}</h5>
+                <p class="card-text"><strong>Artista:</strong> {{ artisti[perf[0]][0] }}</p>
+                <p class="card-text"><strong>Data:</strong> {{ perf[1] }}</p>
+                <p class="card-text"><strong>Ora:</strong> {{ perf[2] }} - {{ perf[3] }}</p>
+                <p class="card-text"><strong>Durata:</strong>
+                  {{ (perf[3][:2]|int - perf[2][:2]|int) * 60 + (perf[3][3:5]|int - perf[2][3:5]|int) }} minuti
+                </p>
+                <p class="card-text"><strong>Descrizione:</strong> {{ perf[4] }}</p>
+                <p class="card-text"><strong>Genere:</strong> {{ perf[7] }}</p>
+                <p class="card-text"><strong>Palco:</strong> {{ perf[8] }}</p>
+              </div>
+            </div>
+
           </div>
 
         </div>
-      </div>
+      </a>
     </div>
     {% endfor %}
   </div>
@@ -164,6 +166,13 @@ Profilo Organizzatore
             <input type="file" name="img_artista" accept="image/jpg, image/png" class="form-control" required>
           </div>
 
+          {% for i in range(1, 6) %}
+          <div class="mb-2">
+            <label>Foto Opzionale {{ i }}</label>
+            <input type="file" name="foto{{ i }}" accept="image/jpg, image/png" class="form-control">
+          </div>
+          {% endfor %}
+
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Salva Performance</button>
@@ -233,6 +242,12 @@ Profilo Organizzatore
               <label>Immagine artista</label>
               <input type="file" name="img_artista" accept="image/jpg, image/png" class="form-control">
             </div>
+            {% for i in range(1, 6) %}
+            <div class="mb-2">
+              <label>Foto Opzionale {{ i }}</label>
+              <input type="file" name="foto{{ i }}" accept="image/jpg, image/png" class="form-control">
+            </div>
+            {% endfor %}
           </div>
           <div class="modal-footer">
             <button type="submit" class="btn btn-primary">Salva Modifiche</button>

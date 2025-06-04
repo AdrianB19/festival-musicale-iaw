@@ -236,6 +236,49 @@ def get_statistiche_disponibilita():
     
     return statistiche
 
+def count_biglietti_per_singola_data(data_specifica):
+
+    sql = """
+            SELECT 
+                b.tipo,
+                b.single_day,
+                b.double_first, 
+                b.double_second,
+                COUNT(a.id_utente) as num_biglietti
+            FROM acquisti a
+            JOIN biglietti b ON a.id_biglietto = b.id
+            WHERE (
+                (b.tipo = 'Giornaliero' AND b.single_day = ?) OR
+                (b.tipo = 'Due giorni' AND (b.double_first = ? OR b.double_second = ?)) OR
+                (b.tipo = 'Full pass')
+            )
+            GROUP BY b.id
+            """
+    
+    conn = sqlite3.connect("soundwave.db")
+
+    cursor = conn.cursor()
+    
+
+    cursor.execute(sql, (data_specifica, data_specifica, data_specifica))
+        
+    results = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    conteggio = 0
+        
+    date_festival = get_date_festival()  
+        
+    for tipo, single_day, double_first, double_second, num_biglietti in results:
+        if tipo == "Full pass" and data_specifica in date_festival:
+            conteggio += num_biglietti
+        else:
+            conteggio += num_biglietti
+    
+    return conteggio
+
 def get_data_acquisto(id_utente):
 
     sql = """

@@ -163,7 +163,8 @@ def profilo_partecipante():
         
     else:
         biglietto = None
-        data, orario = None
+        data = ""
+        orario = ""
 
     return render_template("profilo_partecipante.html", biglietto=biglietto, data=data, orario = orario)
 
@@ -269,9 +270,35 @@ def nuova_performance():
         genere, visibilita, id_palco, current_user.id
     )
 
+    id = performances_dao.get_id_by_artista(nome_artista) #è unique
+
+    print("---------------------------------")
+    print(id)
+    print("------------------------------------")
+
+    # processo le immagini opzionali
+
     flash("Performance creata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
 
+@app.route('/performance/<int:id>')
+def dettaglio_performance(id):
+    db = get_db()
+    cur = db.execute("SELECT * FROM performance WHERE id = ?", (id,))
+    perf = cur.fetchone()
+
+    immagini = []
+    img_dir = os.path.join(app.static_folder, 'performance_foto')
+    for i in range(1, 6):
+        img_path = f"{id}_{i}.jpg"
+        full_path = os.path.join(img_dir, img_path)
+        if os.path.exists(full_path):
+            immagini.append(f"performance_foto/{img_path}")
+
+    durata = (int(perf['ora_fine'][:2]) - int(perf['ora_inizio'][:2])) * 60 + \
+             (int(perf['ora_fine'][3:5]) - int(perf['ora_inizio'][3:5]))
+
+    return render_template('dettaglio_performance.html', performance=perf, immagini=immagini, durata=durata)
 # pubblica una bozza e verifica sovrapposizione / durata max
 @app.route("/pubblica_bozza/<int:id>", methods=["POST"])
 @login_required
@@ -450,15 +477,10 @@ def acquista_biglietto():
         flash("Errore nel recuperare i dati del biglietto", "danger")
         return redirect(url_for("biglietti"))
     
-    # acquisto
-    try:
-        acquisti_dao.nuovo_acquisto(id_utente, id_biglietto, data_acquisto)
-        flash("Acquisto completato con successo!", "success")
-        return redirect(url_for("profilo_partecipante"))
-    except Exception as e:
-        print(f"Errore durante l'acquisto: {e}")
-        flash("Errore durante l'acquisto", "danger")
-        return redirect(url_for("biglietti"))
+
+    acquisti_dao.nuovo_acquisto(id_utente, id_biglietto, data_acquisto)
+    flash("Acquisto completato con successo!", "success")
+    return redirect(url_for("profilo_partecipante"))
 
 # carica utente dal db in base al suo id
 @login_manager.user_loader

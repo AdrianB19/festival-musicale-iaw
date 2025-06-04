@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block titolo %}
+Dettaglio Performance
+{% endblock %}
+
+{% block contenuto %}
+<div class="container my-4">
+
+    <div class="text-center mb-4">
+        <img src="{{ url_for('static', filename=performance['img_artista']) }}" class="rounded-circle shadow"
+            style="width: 120px; height: 120px; object-fit: cover;" alt="Foto artista">
+    </div>
+
+
+    <h2>{{ performance['titolo'] }}</h2>
+    <p><strong>Artista:</strong> {{ performance['artista'] }}</p>
+    <p><strong>Data:</strong> {{ performance['data'] }}</p>
+    <p><strong>Ora:</strong> {{ performance['ora_inizio'] }} - {{ performance['ora_fine'] }}</p>
+    <p><strong>Durata:</strong> {{ durata }} minuti</p>
+    <p><strong>Genere:</strong> {{ performance['genere'] }}</p>
+    <p><strong>Descrizione:</strong> {{ performance['descrizione'] }}</p>
+    <p><strong>Palco:</strong> {{ performance['palco'] }}</p>
+
+    {% if immagini %}
+    <div id="carousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% for img in immagini %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                <img src="{{ url_for('static', filename='performance_foto/' ~ img) }}" class="d-block w-100"
+                    alt="Foto {{ loop.index }}">
+            </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
