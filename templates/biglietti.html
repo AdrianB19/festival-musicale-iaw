@@ -5,96 +5,230 @@
 <div class="container mt-5">
   <h2 class="mb-4">Acquista un Biglietto</h2>
 
-  <!-- Giornaliero -->
-  <div class="card mb-3">
+  <!-- NUOVO: Sezione Statistiche Disponibilità -->
+  {% if statistiche_disponibilita %}
+  <div class="card mb-4 bg-info text-white">
     <div class="card-body">
-      <h5 class="card-title">🎫 Biglietto Giornaliero - 25€</h5>
-      <p class="card-text">Valido per un solo giorno a scelta.</p>
-
-      {% for giorno, info in dati_biglietti['giornaliero'].items() %}
-        <div class="mb-2">
-          <strong>{{ giorno }}:</strong>
-          {{ info.percentuale }}% venduti - {{ info.rimanenti }} rimasti
-          <div class="progress">
-            <div class="progress-bar" role="progressbar" style="width: {{ info.percentuale }}%;" aria-valuenow="{{ info.percentuale }}" aria-valuemin="0" aria-valuemax="100">
-              {{ info.percentuale }}%
+      <h6 class="card-title">📊 Disponibilità Biglietti per Data</h6>
+      <div class="row">
+        {% for data, stats in statistiche_disponibilita.items() %}
+        <div class="col-md-4 mb-2">
+          <div class="card bg-light text-dark">
+            <div class="card-body p-2">
+              <small class="fw-bold">{{ data }}</small><br>
+              <small>
+                Disponibili: <span class="fw-bold {% if stats.disponibili < 50 %}text-danger{% elif stats.disponibili < 100 %}text-warning{% else %}text-success{% endif %}">
+                  {{ stats.disponibili }}/{{ stats.totale }}
+                </span>
+              </small>
+              <div class="progress mt-1" style="height: 8px;">
+                <div class="progress-bar {% if stats.percentuale_venduta >= 90 %}bg-danger{% elif stats.percentuale_venduta >= 70 %}bg-warning{% else %}bg-success{% endif %}" 
+                     style="width: {{ stats.percentuale_venduta }}%"></div>
+              </div>
+              <small class="text-muted">{{ stats.percentuale_venduta }}% venduti</small>
             </div>
           </div>
         </div>
-      {% endfor %}
-
-      <form method="POST" action="{{ url_for('acquista_biglietto') }}">
-        <input type="hidden" name="tipo" value="giornaliero">
-        <div class="mb-3 mt-3">
-          <label for="giorno_singolo" class="form-label">Seleziona il giorno:</label>
-          <select name="start_date" id="giorno_singolo" class="form-select" required>
-            <option value="">-- Seleziona --</option>
-            <option value="Venerdì 20 Giugno">Venerdì 20 Giugno</option>
-            <option value="Sabato 21 Giugno">Sabato 21 Giugno</option>
-            <option value="Domenica 22 Giugno">Domenica 22 Giugno</option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Acquista</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Due Giorni -->
-  <div class="card mb-3">
-    <div class="card-body">
-      <h5 class="card-title">🎟️ Biglietto Due Giorni - 40€</h5>
-      <p class="card-text">Valido per due giorni consecutivi.</p>
-
-      {% for combo, info in dati_biglietti['due_giorni'].items() %}
-        <div class="mb-2">
-          <strong>{{ combo.replace('_', ' + ') }}:</strong>
-          {{ info.percentuale }}% venduti - {{ info.rimanenti }} rimasti
-          <div class="progress">
-            <div class="progress-bar bg-success" role="progressbar" style="width: {{ info.percentuale }}%;" aria-valuenow="{{ info.percentuale }}" aria-valuemin="0" aria-valuemax="100">
-              {{ info.percentuale }}%
-            </div>
-          </div>
-        </div>
-      {% endfor %}
-
-      <form method="POST" action="{{ url_for('acquista_biglietto') }}">
-        <input type="hidden" name="tipo" value="due_giorni">
-        <div class="mb-3 mt-3">
-          <label for="due_giorni" class="form-label">Seleziona i giorni:</label>
-          <select name="start_date" id="due_giorni" class="form-select" required>
-            <option value="">-- Seleziona --</option>
-            <option value="Venerdì 20 Giugno">Venerdì + Sabato</option>
-            <option value="Sabato 21 Giugno">Sabato + Domenica</option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Acquista</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Full Pass -->
-  <div class="card mb-3">
-    <div class="card-body">
-      <h5 class="card-title">🎫 Full Pass - 60€</h5>
-      <p class="card-text">Accesso completo a tutti e 3 i giorni del festival.</p>
-
-      {% set full = dati_biglietti['full_pass']['all'] %}
-      <div class="mb-2">
-        <strong>Tutti i giorni:</strong> {{ full.percentuale }}% venduti - {{ full.rimanenti }} rimasti
-        <div class="progress">
-          <div class="progress-bar bg-danger" role="progressbar" style="width: {{ full.percentuale }}%;" aria-valuenow="{{ full.percentuale }}" aria-valuemin="0" aria-valuemax="100">
-            {{ full.percentuale }}%
-          </div>
-        </div>
+        {% endfor %}
       </div>
-
-      <form method="POST" action="{{ url_for('acquista_biglietto') }}">
-        <input type="hidden" name="tipo" value="full_pass">
-        <input type="hidden" name="start_date" value="Venerdì 20 Giugno">
-        <button type="submit" class="btn btn-primary mt-3">Acquista</button>
-      </form>
     </div>
   </div>
-</div>
-{% endblock %}
+  {% endif %}
 
+  <!-- Sezione Biglietto Giornaliero -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <!-- Titolo con prezzo dinamico basato sul primo biglietto disponibile -->
+      <h5 class="card-title">
+        🎫 Biglietto Giornaliero
+        {% if dati_biglietti['giornaliero'] %}
+          - €{{ dati_biglietti['giornaliero'][0]['prezzo'] }}
+        {% endif %}
+      </h5>
+
+      <p class="card-text">Valido per un solo giorno a scelta tra i giorni del festival.</p>
+
+      <!-- Controllo se ci sono biglietti giornalieri disponibili -->
+      {% if dati_biglietti['giornaliero'] %}
+        <form method="POST" action="{{ url_for('acquista_biglietto') }}">
+          <!-- Campo nascosto per identificare il tipo di biglietto -->
+          <input type="hidden" name="tipo" value="Giornaliero">
+
+          <div class="mb-3">
+            <label for="giorno_singolo" class="form-label">Seleziona il giorno:</label>
+            <select name="start_date" id="giorno_singolo" class="form-select" required>
+              <option value="">-- Seleziona un giorno --</option>
+              <!-- Loop attraverso tutti i biglietti giornalieri disponibili -->
+              {% for biglietto in dati_biglietti['giornaliero'] %}
+                {% set data_iso = biglietto['giorno_iso'] %}
+                {% set disponibile = statistiche_disponibilita.get(data_iso, {}).get('disponibile', True) %}
+                {% set num_disponibili = statistiche_disponibilita.get(data_iso, {}).get('disponibili', 200) %}
+                
+                <option value="{{ biglietto['giorno_iso'] }}" 
+                        {% if not disponibile %}disabled{% endif %}>
+                  {{ biglietto['giorno_testo'] }} - €{{ biglietto['prezzo'] }}
+                  {% if not disponibile %}
+                    (ESAURITO)
+                  {% elif num_disponibili < 50 %}
+                    ({{ num_disponibili }} rimasti)
+                  {% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Acquista Biglietto Giornaliero</button>
+        </form>
+      {% else %}
+        <!-- Messaggio quando non ci sono biglietti giornalieri disponibili -->
+        <div class="alert alert-warning" role="alert">
+          <strong>Non disponibile:</strong> Al momento non ci sono biglietti giornalieri disponibili.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Sezione Biglietto Due Giorni -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <!-- Titolo con prezzo del primo biglietto due giorni disponibile -->
+      <h5 class="card-title">
+        🎟️ Biglietto Due Giorni
+        {% if dati_biglietti['due_giorni'] %}
+          - €{{ dati_biglietti['due_giorni'][0]['prezzo'] }}
+        {% endif %}
+      </h5>
+
+      <p class="card-text">Valido per due giorni consecutivi del festival. Risparmia rispetto all'acquisto di due biglietti singoli!</p>
+
+      <!-- Controllo se ci sono biglietti due giorni disponibili -->
+      {% if dati_biglietti['due_giorni'] %}
+        <form method="POST" action="{{ url_for('acquista_biglietto') }}">
+          <!-- Campo nascosto per identificare il tipo di biglietto -->
+          <input type="hidden" name="tipo" value="Due giorni">
+
+          <div class="mb-3">
+            <label for="due_giorni" class="form-label">Seleziona i giorni consecutivi:</label>
+            <select name="start_date" id="due_giorni" class="form-select" required>
+              <option value="">-- Seleziona i giorni --</option>
+              <!-- Loop attraverso tutte le combinazioni di due giorni disponibili -->
+              {% for biglietto in dati_biglietti['due_giorni'] %}
+                {% set giorni_iso = biglietto['giorni_iso'] %}
+                {% set disponibile_tutti = true %}
+                {% set min_disponibili = 200 %}
+                
+                {% for giorno in giorni_iso %}
+                  {% set stats_giorno = statistiche_disponibilita.get(giorno, {}) %}
+                  {% if not stats_giorno.get('disponibile', True) %}
+                    {% set disponibile_tutti = false %}
+                  {% endif %}
+                  {% set disp_giorno = stats_giorno.get('disponibili', 200) %}
+                  {% if disp_giorno < min_disponibili %}
+                    {% set min_disponibili = disp_giorno %}
+                  {% endif %}
+                {% endfor %}
+                
+                <option value="{{ biglietto['giorni_iso']|join(',') }}"
+                        {% if not disponibile_tutti %}disabled{% endif %}>
+                  {{ biglietto['giorni_testo'] }} - €{{ biglietto['prezzo'] }}
+                  {% if not disponibile_tutti %}
+                    (GIORNI ESAURITI)
+                  {% elif min_disponibili < 50 %}
+                    ({{ min_disponibili }} rimasti)
+                  {% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Acquista Biglietto Due Giorni</button>
+        </form>
+      {% else %}
+        <!-- Messaggio quando non ci sono biglietti due giorni disponibili -->
+        <div class="alert alert-warning" role="alert">
+          <strong>Non disponibile:</strong> Al momento non ci sono biglietti per due giorni disponibili.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Sezione Full Pass -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <!-- Titolo con prezzo del full pass -->
+      <h5 class="card-title">
+        🎫 Full Pass
+        {% if dati_biglietti['full_pass'] %}
+          - €{{ dati_biglietti['full_pass'][0]['prezzo'] }}
+        {% endif %}
+      </h5>
+
+      <p class="card-text">
+        Accesso completo a tutti i giorni del festival. 
+        <strong>La scelta migliore per vivere l'esperienza completa!</strong>
+      </p>
+
+      <!-- Controllo se il full pass è disponibile -->
+      {% if dati_biglietti['full_pass'] %}
+        {% set fullpass_disponibile = true %}
+        {% set min_disponibili_fullpass = 200 %}
+        
+        {% for data, stats in statistiche_disponibilita.items() %}
+          {% if not stats.get('disponibile', True) %}
+            {% set fullpass_disponibile = false %}
+          {% endif %}
+          {% if stats.get('disponibili', 200) < min_disponibili_fullpass %}
+            {% set min_disponibili_fullpass = stats.get('disponibili', 200) %}
+          {% endif %}
+        {% endfor %}
+        
+        <form method="POST" action="{{ url_for('acquista_biglietto') }}">
+          <!-- Campi nascosti per il full pass -->
+          <input type="hidden" name="tipo" value="Full pass">
+          <input type="hidden" name="start_date" value="{{ dati_biglietti['full_pass'][0]['value'] }}">
+          
+          <!-- Dettagli del full pass -->
+          <div class="mb-3">
+            <div class="alert {% if fullpass_disponibile %}alert-info{% else %}alert-danger{% endif %}" role="alert">
+              <strong>{{ dati_biglietti['full_pass'][0]['label'] }}</strong><br>
+              Prezzo: <strong>€{{ dati_biglietti['full_pass'][0]['prezzo'] }}</strong><br>
+              <small>Include accesso a tutti i giorni del festival e contenuti esclusivi.</small>
+              {% if not fullpass_disponibile %}
+                <br><small class="text-danger"><strong>ATTENZIONE:</strong> Alcuni giorni sono esauriti!</small>
+              {% elif min_disponibili_fullpass < 100 %}
+                <br><small class="text-warning"><strong>ATTENZIONE:</strong> Solo {{ min_disponibili_fullpass }} full pass rimasti!</small>
+              {% endif %}
+            </div>
+          </div>
+
+          <button type="submit" class="btn {% if fullpass_disponibile %}btn-success{% else %}btn-secondary{% endif %} btn-lg" 
+                  {% if not fullpass_disponibile %}disabled{% endif %}>
+            {% if fullpass_disponibile %}Acquista Full Pass{% else %}Full Pass Non Disponibile{% endif %}
+          </button>
+        </form>
+      {% else %}
+        <!-- Messaggio quando il full pass non è disponibile -->
+        <div class="alert alert-warning" role="alert">
+          <strong>Non disponibile:</strong> Al momento il Full Pass non è disponibile.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Sezione informazioni aggiuntive -->
+  <div class="card mb-4 bg-light">
+    <div class="card-body">
+      <h6 class="card-title">ℹ️ Informazioni Importanti</h6>
+      <ul class="mb-0">
+        <li>I biglietti sono nominali e non trasferibili</li>
+        <li>È necessario presentare un documento di identità valido all'ingresso</li>
+        <li>I biglietti acquistati non sono rimborsabili</li>
+        <li><strong>Limite di 200 partecipanti per giorno</strong></li>
+        <li>Per assistenza contatta il nostro <a href="mailto:support@torinosoundwave.it">servizio clienti</a></li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

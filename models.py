@@ -15,11 +15,13 @@ class User(UserMixin):
 
 # classe biglietto
 class Biglietto:
-    def __init__(self, id, id_utente, tipo, giorni):
+    def __init__(self, id, tipo, single_day, double_first, double_second, prezzo):
         self.id = id
-        self.id_utente = id_utente
-        self.tipo = tipo  # "giornaliero", "2giorni", "full"
-        self.giorni = giorni  # es. "ven", "sab,dom"
+        self.tipo = tipo
+        self.single_day = single_day
+        self.double_first = double_first
+        self.double_second = double_second
+        self.prezzo = prezzo
 
 # rappresenta la performance
 class Performance:
@@ -39,3 +41,10 @@ class Palco:
     def __init__(self, id, nome):
         self.id = id
         self.nome = nome
+
+class Acquisto:
+    def __init__(self, id_utente, id_biglietto, data):
+        self.id_utente = id_utente
+        self.id_biglietto = id_biglietto
+        self.id_utente = data
+        

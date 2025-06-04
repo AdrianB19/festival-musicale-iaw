@@ -1,5 +1,5 @@
 # import necessari a visualizzazione delle routes, per l'autenticazione, per vedere i moduli
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
@@ -7,7 +7,7 @@ from PIL import Image
 import os
 
 from models  import User, Biglietto, Performance, Palco
-import utenti_dao, biglietti_dao, performances_dao, palchi_dao 
+import utenti_dao, biglietti_dao, performances_dao, palchi_dao , acquisti_dao
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secretpass"
@@ -16,9 +16,10 @@ app.config["SECRET_KEY"] = "secretpass"
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
-POST_IMG_WIDTH = 600
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}  # formati di foto accettabili
+POST_IMG_WIDTH = 600 # profondità immagini
 
+# pagina di inizio
 @app.route('/')
 def home():
     #prendo le performances
@@ -33,32 +34,39 @@ def home():
                           performances=performances,
                           artisti=artisti)
 
+# form per il login che ti fa accedere salvando id, tipo utente
 @app.route("/login")
 def login():
     return render_template("login.html")
 
+# form di iscrizione che poi andrà su nuovo_utente
 @app.route("/signup")
 def signup():
     return render_template("signup.html")
 
+# pagina standalone
 @app.route("/faq")
 def faq():
     return render_template("faq.html")
 
+# pagina standalone
 @app.route("/about")
 def about():
     return render_template("about.html")
 
+# passo biglietti + stats
 @app.route("/biglietti")
 def biglietti():
-    return render_template("biglietti2.html")
+    dati_biglietti = biglietti_dao.get_opzioni_biglietti()
+    statistiche_disponibilita = acquisti_dao.get_statistiche_disponibilita()
+    return render_template("biglietti.html", dati_biglietti = dati_biglietti, statistiche_disponibilita=statistiche_disponibilita)
 
-# disconnette l'utente autenticato, protetto con login_required
+# disconnette utente e cancella dalla sessione i dati (tipo ed id)
 @app.route("/logout")
 @login_required
 def logout():
-
     logout_user()
+    session.pop('tipo', None)  
     flash("Sei stato disconnesso", "info")
     return redirect(url_for("home"))
 
@@ -66,14 +74,14 @@ def logout():
 @app.route("/subscribe", methods=["POST"])
 def subscribe():
 
-    email = request.form.get('txt_email')
+    email = request.form.get('txt_email') # prendo email da form
     
-    #se non è nel db flash
+    #se è già nel db non può usarla per registrarsi
     if utenti_dao.get_utente_email(email):
         flash("Email già registrata!", "error")
         return redirect(url_for('signup'))
     
-    #se è nel db allora prendo altri parametri e creo nuovo utente
+    #se non è nel db prendo altri campi e iniserisco un nuovo utente nel db
     utenti_dao.nuovo_utente(
         request.form.get('txt_nome'),
         request.form.get('txt_cognome'),
@@ -133,31 +141,40 @@ def profilo():
         return redirect(url_for("profilo_partecipante"))
     else:
         flash("Tipo utente non riconosciuto.", "danger")
-        return redirect(url_for("home"))
+        abort(404)
 
 #route per profilo partecipante
-@app.route("/profilo_partecipante")
+@app.route("/profilo_partecipante", methods = ["GET", "POST"])
 @login_required
 def profilo_partecipante():
 
     if session.get('tipo') != 'partecipante':
-
         flash("Accesso non autorizzato.", "danger")
-
-        return redirect(url_for("home"))
+        abort(404)
     
-    # altrimenti prendo i biglietti dell'user corrente
-    biglietti = biglietti_dao.get_biglietto_by_partecipante(current_user.id)
+    # vedo se un utente ha un comprato un biglietto, lo prendo dal db e passo anche data acquisto
 
-    return render_template("profilo_partecipante.html", biglietti=biglietti)
+    id_biglietto = acquisti_dao.verifica_acquisto_utente(current_user.id)
+    
+    if id_biglietto is not None:
 
+        biglietto = biglietti_dao.get_biglietto(id_biglietto)
+        data, orario = acquisti_dao.get_data_acquisto(current_user.id)
+        
+    else:
+        biglietto = None
+        data, orario = None
+
+    return render_template("profilo_partecipante.html", biglietto=biglietto, data=data, orario = orario)
+
+# route per il profilo organizzatore, deve caricare perf pubblicate e bozze
 @app.route("/profilo_organizzatore", methods=["GET", "POST"])
 @login_required
 def profilo_organizzatore():
 
     if session.get('tipo') != 'organizzatore':
         flash("Accesso non autorizzato.", "danger")
-        return redirect(url_for("home"))
+        abort(404)
     
     pubblicate = performances_dao.get_performances_pubbliche_organizzatore(current_user.id)
     bozze = performances_dao.get_bozze_organizzatore(current_user.id)
@@ -175,9 +192,15 @@ def profilo_organizzatore():
         artisti=artisti
     )
 
+# creo una nuova performance e leggo dati dal form
 @app.route("/nuova_performance", methods=["POST"])
 @login_required
 def nuova_performance():
+
+    if session.get('tipo') != 'organizzatore':
+        flash("Accesso non autorizzato.", "danger")
+        abort(404)
+
     #campi dal form
     data = request.form.get("data")
     ora_inizio = request.form.get("ora_inizio")
@@ -194,30 +217,32 @@ def nuova_performance():
         flash("Errore: tutti i campi devono essere compilati.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
+    # il nome artista è univoco
     if performances_dao.artista_esiste(nome_artista):
         flash("Errore: esiste già una performance con questo nome artista.", "danger")
         return redirect(url_for("profilo_organizzatore"))
     
-    # Conversione in datetime 
+    # converto in datetime 
     inizio_dt = datetime.strptime(ora_inizio, "%H:%M")
     fine_dt = datetime.strptime(ora_fine, "%H:%M")
 
-    # Se fine è prima di inizio, considera che passa la mezzanotte
+    # se fine è prima di inizio, considera che passa la mezzanotte
     if fine_dt <= inizio_dt:
         flash("L'ora di inizio deve essere precedente all'ora di fine.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
-    # Controllo che inizio sia dopo le 14:00
+    # controllo che inizio sia dopo le 14:00
     if inizio_dt.time() < datetime.strptime("14:00", "%H:%M").time():
         flash("L'ora di inizio deve essere dopo le 14:00.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
-    # Controllo durata massima
+    # durata massima non oltre 1.30 h
     durata = fine_dt - inizio_dt
     if durata > timedelta(hours=1, minutes=30):
         flash("La performance non deve durare più di 90 minuti.", "danger")
         return redirect(url_for("profilo_organizzatore"))
     
+    # se deve esser pubblicata subito
     if visibilita == 1:
         if performances_dao.verifica_sovrapposizione(data, ora_inizio, ora_fine, id_palco):
             flash("Errore: performance sovrapposta a un'altra sullo stesso palco.", "danger")
@@ -247,9 +272,15 @@ def nuova_performance():
     flash("Performance creata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
 
+# pubblica una bozza e verifica sovrapposizione / durata max
 @app.route("/pubblica_bozza/<int:id>", methods=["POST"])
 @login_required
 def pubblica_bozza(id):
+
+    if session.get('tipo') != 'organizzatore':
+        flash("Accesso non autorizzato.", "danger")
+        abort(404)
+
     bozza = performances_dao.get_performance_by_id(id)
 
     if not bozza:
@@ -262,7 +293,7 @@ def pubblica_bozza(id):
     id_palco = bozza["id_palco"]
     nome_artista = bozza["nome_artista"]
 
-    # Controllo sovrapposizione
+    # controllo sovrapposizione
     sovrapposte = performances_dao.verifica_sovrapposizione(data, ora_inizio, ora_fine, id_palco)
     if sovrapposte:
         flash("Errore: la performance si sovrappone a un'altra già pubblicata sullo stesso palco.", "danger")
@@ -272,9 +303,15 @@ def pubblica_bozza(id):
     flash("Bozza pubblicata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
 
+# modifica la bozza
 @app.route("/modifica_bozza/<int:id>", methods=["GET", "POST"])
 @login_required
 def modifica_bozza(id):
+
+    if session.get('tipo') != 'organizzatore':
+        flash("Accesso non autorizzato.", "danger")
+        abort(404)
+
     bozza = performances_dao.get_performance_by_id(id)
 
     if not bozza:
@@ -339,24 +376,90 @@ def modifica_bozza(id):
     flash("Bozza aggiornata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
 
-
+# acquisto un biglietto verificando che non ne abbia già acquistato uno, che ci sia disponibilita
 @app.route("/acquista_biglietto", methods=["POST"])
 @login_required
 def acquista_biglietto():
-    #prendo i campi dal form
+    # verifica tipo utente
     if session.get('tipo') != 'partecipante':
         flash("Errore: sei un organizzatore, non puoi comprare un biglietto", "danger")
-        return redirect(url_for("biglietti"))
+        abort(404)
     
-    start_date = request.form("start_date")
-    tipo = request.form("tipo")
+    # recupera dati dal form
+    start_date = request.form.get("start_date", "").strip()
+    tipo = request.form.get("tipo", "").strip()
     id_utente = current_user.id
-
+    
+    #  campi obbligatori anche se è una selezione
     if not all([start_date, tipo, id_utente]):
         flash("Errore: tutti i campi devono essere compilati.", "danger")
-        return redirect(url_for("profilo_organizzatore"))
+        return redirect(url_for("biglietti"))
     
-    #verifica che l'utente non abbia già acquistato un biglietto
+    # verifica se ha già un biglietto
+    if acquisti_dao.verifica_acquisto_utente(id_utente):
+        flash("Hai già acquistato un biglietto!", "danger")
+        return redirect(url_for("profilo_partecipante"))
+    
+    # per semplificare la query
+    single_day = None
+    double_first = None
+    double_second = None
+    
+    try:
+        if tipo == 'Giornaliero':
+            single_day = start_date
+        elif tipo == 'Due giorni':
+            giorni = start_date.split(",")
+            if len(giorni) != 2:
+                raise ValueError("Formato date non valido per Due Giorni")
+            double_first, double_second = [g.strip() for g in giorni]
+        elif tipo != 'Full pass':
+            flash("Tipo biglietto non valido!", "danger")
+            return redirect(url_for("biglietti"))
+    except ValueError as e:
+        flash(f"Errore nei dati inseriti: {str(e)}", "danger")
+        return redirect(url_for("biglietti"))
+    
+    # NUOVO: Verifica disponibilità biglietti
+    disponibilita = acquisti_dao.verifica_disponibilita_biglietto(
+        tipo, single_day, double_first, double_second
+    )
+    
+    # dispobibilita nei giorni
+    if not disponibilita['disponibile']:
+        flash(f"Biglietto non disponibile: {disponibilita['messaggio']}", "danger")
+        return redirect(url_for("biglietti"))
+    
+    # data corrente yyyy-mm-dd hh:mm
+    data_acquisto = datetime.now().strftime("%Y-%m-%d %H:%M")
+    
+    # id biglietto
+    try:
+        biglietto = biglietti_dao.get_id_biglietto(tipo, single_day, double_first, double_second)
+        
+        # Gestione caso nessun risultato trovato
+        if not biglietto:
+            flash("Biglietto non disponibile per le date selezionate", "danger")
+            return redirect(url_for("biglietti"))
+        
+        # ID biglietto dal risultato è una tupla (id,)
+        id_biglietto = biglietto[0] if isinstance(biglietto, tuple) else biglietto
+        
+    except Exception as e:
+        print(f"Errore nel recupero ID biglietto: {e}")
+        flash("Errore nel recuperare i dati del biglietto", "danger")
+        return redirect(url_for("biglietti"))
+    
+    # acquisto
+    try:
+        acquisti_dao.nuovo_acquisto(id_utente, id_biglietto, data_acquisto)
+        flash("Acquisto completato con successo!", "success")
+        return redirect(url_for("profilo_partecipante"))
+    except Exception as e:
+        print(f"Errore durante l'acquisto: {e}")
+        flash("Errore durante l'acquisto", "danger")
+        return redirect(url_for("biglietti"))
+
 # carica utente dal db in base al suo id
 @login_manager.user_loader
 def load_user(user_id):

@@ -1,88 +1,141 @@
 import sqlite3
+from datetime import datetime
 
-def nuovo_biglietto(tipo, id_utente, start_date):
-
-    sql = "INSERT INTO biglietti (tipo, id_utente, start_date) VALUES (?, ?, ?)"
-
-    conn = sqlite3.connect("soundwave.db")
-
-    cursor = conn.cursor()
-    cursor.execute(sql,(tipo, id_utente, start_date))
-
-    conn.commit()
-
-    cursor.close()
-    conn.close()
-
-# query che calcola numero biglietti per ven
-
-
-# query che calcola numero biglietti per sab
-
-def biglietti_dom():
-    sql = """
-        SELECT COUNT(*) 
-        FROM biglietti 
-        WHERE tipo = 'full_pass' 
-            OR (tipo = 'due_giorni' AND start_date = 'Sabato 21 Giugno / Domenica 22 Giugno')
-            OR (tipo = 'giornaliero' AND start_date = 'Domenica 22 Giugno')
-    """
+def formatta_data(data_str):
     
+    data = datetime.strptime(data_str, "%Y-%m-%d")
+    
+    giorni = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
+
+    mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno',
+            'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
+
+    giorno_settimana = giorni[data.weekday()]
+    mese = mesi[data.month - 1]
+    giorno_numero = data.day
+    
+    giorno_formattato = f"{giorno_settimana} {giorno_numero} {mese}"
+    
+    return data_str, giorno_formattato
+
+def get_opzioni_biglietti():
+ 
+    sql = "SELECT tipo, single_day, double_first, double_second, prezzo FROM biglietti"
+
     conn = sqlite3.connect("soundwave.db")
+    
     cursor = conn.cursor()
+
     cursor.execute(sql)
+
+    results = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
     
-    count = cursor.fetchone()[0]
+    # Inizializzazione del dizionario finale da restituire al template
+    # Ogni chiave corrisponde a un tipo di biglietto con una lista vuota
+    opzioni = {
+        "giornaliero": [],
+        "due_giorni": [],
+        "full_pass": [] 
+    }
+    
+    # Iterazione attraverso tutti i record recuperati dal database
+    # Ogni riga contiene: tipo, single_day, double_first, double_second, prezzo
+    for tipo, single_day, double_first, double_second, prezzo in results:
+        
+        if tipo == "Giornaliero" and single_day:
+
+            giorno_iso, giorno_testo = formatta_data(single_day)
+
+            if giorno_iso and giorno_testo:
+
+                opzioni["giornaliero"].append({
+                    "tipo": tipo,
+                    "giorno_iso": giorno_iso,
+                    "giorno_testo": giorno_testo,
+                    "prezzo": prezzo
+                })
+
+        elif tipo == "Due giorni" and double_first and double_second:
+
+            giorno1_iso, giorno1_testo = formatta_data(double_first)
+            giorno2_iso, giorno2_testo = formatta_data(double_second)
+            
+            if giorno1_iso and giorno1_testo and giorno2_iso and giorno2_testo:
+                opzioni["due_giorni"].append({
+                    "tipo": tipo,
+                    "giorni_iso": [giorno1_iso, giorno2_iso],
+                    "giorni_testo": f"{giorno1_testo} e {giorno2_testo}",
+                    "prezzo": prezzo
+                })
+
+        elif tipo == "Full pass":
+
+            opzioni["full_pass"].append({
+                "tipo": tipo,
+                "value": "full_pass",
+                "label": "Pass completo festival",
+                "prezzo": prezzo
+            })
+
+    return opzioni
+
+# prende i dati di un biglietto
+def get_biglietto(id_biglietto):
+
+    sql = "SELECT tipo, single_day, double_first, double_second, prezzo FROM biglietti where id = ?"
+
+    conn = sqlite3.connect("soundwave.db")
+
+    cursor = conn.cursor()
+
+    cursor.execute(sql, (id_biglietto,))
+
+    biglietto = cursor.fetchone()
 
     cursor.close()
     conn.close()
 
-    return count
+    return biglietto
 
-# biglietti_dao.py
+# uso questo modo per gestire il tipo dei biglietti (non è molto estendibile)
+def get_id_biglietto(tipo, single_day, double_first, double_second):
 
-def count_biglietti(tipo, start_date=None):
     conn = sqlite3.connect("soundwave.db")
-    cursor = conn.cursor()
 
-    if tipo == 'full_pass':
-        sql = "SELECT COUNT(*) FROM biglietti WHERE tipo = 'full_pass'"
+    cursor = conn.cursor()
+      
+    if tipo == 'Giornaliero':
+        sql = """SELECT id FROM biglietti 
+                    WHERE tipo = ? AND single_day = ? 
+                    AND double_first IS NULL AND double_second IS NULL"""
+        
+        cursor.execute(sql, (tipo, single_day))
+        
+    elif tipo == 'Due giorni':
+        sql = """SELECT id FROM biglietti 
+                    WHERE tipo = 'Due giorni' AND double_first = ? AND double_second = ? 
+
+                    AND single_day IS NULL"""
+        cursor.execute(sql, (double_first, double_second))
+        
+    elif tipo == 'Full pass':
+        sql = """SELECT id FROM biglietti 
+                    WHERE tipo = 'Full pass'
+                    AND single_day IS NULL 
+                    AND double_first IS NULL 
+                    AND double_second IS NULL"""
+        
         cursor.execute(sql)
-    elif tipo == 'due_giorni' and start_date:
-        sql = "SELECT COUNT(*) FROM biglietti WHERE tipo = 'due_giorni' AND start_date = ?"
-        cursor.execute(sql, (start_date,))
-    elif tipo == 'giornaliero' and start_date:
-        sql = "SELECT COUNT(*) FROM biglietti WHERE tipo = 'giornaliero' AND start_date = ?"
-        cursor.execute(sql, (start_date,))
+        
     else:
-        return 0
-
-    count = cursor.fetchone()[0]
-
-    cursor.close()
-    conn.close()
-    return count
-
-def count_biglietti_per_giorno(giorno):
-    conn = sqlite3.connect("soundwave.db")
-    cursor = conn.cursor()
-
-    sql = """
-    SELECT COUNT(*) FROM biglietti
-    WHERE 
-        (tipo = 'giornaliero' AND start_date = ?)
-        OR 
-        (tipo = 'due_giorni' AND start_date LIKE ?)
-        OR 
-        (tipo = 'full_pass' AND ? = 'Venerdì 20 Giugno')
-    """
-
-    # per "LIKE" serve includere il giorno nella stringa
-    cursor.execute(sql, (giorno, f"%{giorno}%", giorno))
-    count = cursor.fetchone()[0]
+        return None
+    
+    risultato = cursor.fetchone()
 
     cursor.close()
     conn.close()
-    return count
 
-
+    return risultato
