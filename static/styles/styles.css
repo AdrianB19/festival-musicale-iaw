@@ -1,22 +1,38 @@
+
+:root {
+  /* Palette Festival */
+  --festival-orange: #ff6b35;      /* Arancio Energia */
+  --festival-yellow: #f7931e;      /* Giallo Sole */
+  --festival-green-dark: #2c5234;  /* Verde Parco */
+  --festival-green-light: #90c695; /* Verde Fresco */
+  --festival-sky: #87ceeb;          /* Azzurro Cielo */
+  --festival-cream: #fef7dc;        /* Crema Calda */
+  
+  /* Varianti hover */
+  --festival-orange-hover: #e55a2b;
+  --festival-yellow-hover: #e0851a;
+  --festival-green-hover: #234429;
+}
+
 body {
-  background-color: #F7F9FB;
-  color: #1C1B29;
+  background-color: var(--festival-cream);
+  color: var(--festival-green-dark);
   font-family: 'Poppins', sans-serif;
 }
 
 header {
-  background-color: #F7F9FB;
-  border-bottom: 2px solid #8E44FF;
+  background-color: var(--festival-cream);
+  border-bottom: 2px solid var(--festival-green-light);
 }
 
 header a span {
-  color: #8E44FF;
+  color: var(--festival-green-dark);
   font-weight: 700;
   font-size: 1.2rem;
 }
 
 .nav-link {
-  color: #1C1B29;
+  color: var(--festival-green-dark);
   font-weight: 500;
   transition: color 0.2s ease;
 }
@@ -24,7 +40,7 @@ header a span {
 .nav-link:hover,
 .nav-link.active,
 .nav-link:focus {
-  color: #FF6E6C;
+  color: var(--festival-orange);
   text-decoration: none;
 }
 
@@ -34,18 +50,18 @@ h3,
 h5,
 .display-4,
 .text-1 {
-  color: #8E44FF;
+  color: var(--festival-green-dark);
   font-weight: 700;
 }
 
 .about-page h2,
 .about-page h3 {
-  color: #1DD3B0;
+  color: var(--festival-green-light);
 }
 
 strong,
 .evident {
-  color: #FF6E6C;
+  color: var(--festival-orange);
   font-weight: 600;
 }
 
@@ -55,86 +71,95 @@ strong,
 }
 
 .username-viola {
-  color: #8E44FF !important;
-  /* Viola elettrico coerente col tema */
+  color: var(--festival-green-dark) !important;
 }
 
-
 .badge-corallo {
-  background-color: #FF6E6C !important;
-  /* Corallo */
+  background-color: var(--festival-orange) !important;
   color: white !important;
 }
 
 .btn-primary {
-  background-color: #8E44FF;
-  border-color: #8E44FF;
+  background-color: var(--festival-orange);
+  border-color: var(--festival-orange);
   color: white;
-  box-shadow: 0 4px 15px rgba(142, 68, 255, 0.5);
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.5);
+  transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
-  background-color: #FF6E6C;
-  border-color: #FF6E6C;
-  box-shadow: 0 0 10px rgba(255, 110, 108, 0.4);
+  background-color: var(--festival-orange-hover);
+  border-color: var(--festival-orange-hover);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6);
+  transform: translateY(-2px);
 }
 
 .btn-outline-primary {
-  color: #8E44FF;
-  border-color: #8E44FF;
+  color: var(--festival-orange);
+  border-color: var(--festival-orange);
 }
 
 .btn-outline-primary:hover {
-  background-color: #8E44FF;
+  background-color: var(--festival-orange);
   color: white;
 }
 
 .btn-danger,
 .sfondo {
-  background-color: #FF6E6C;
-  border-color: #FF6E6C;
+  background-color: var(--festival-yellow);
+  border-color: var(--festival-yellow);
+  color: var(--festival-green-dark);
 }
 
 .btn-danger:hover {
-  background-color: #FF9800;
-  border-color: #FF9800;
+  background-color: var(--festival-yellow-hover);
+  border-color: var(--festival-yellow-hover);
 }
 
 .card {
   background-color: white;
-  border: none;
-  box-shadow: 0 8px 20px rgba(28, 27, 41, 0.1);
+  border: 1px solid rgba(144, 198, 149, 0.3);
+  box-shadow: 0 8px 20px rgba(44, 82, 52, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(44, 82, 52, 0.15);
+  border-color: var(--festival-green-light);
 }
 
 .badge-highlight {
-  background-color: #FFD447;
-  color: #1C1B29;
+  background-color: var(--festival-yellow);
+  color: var(--festival-green-dark);
 }
 
 .alert-info {
-  background-color: #FFD447;
-  color: #1C1B29;
-  box-shadow: 0 4px 15px rgba(255, 212, 71, 0.3);
+  background-color: var(--festival-yellow);
+  color: var(--festival-green-dark);
+  box-shadow: 0 4px 15px rgba(247, 147, 30, 0.3);
   border: none;
+  border-radius: 8px;
 }
 
 .accordion-header,
 .bg2 {
-  background-color: #ffe17e;
+  background-color: rgba(144, 198, 149, 0.2);
 }
 
 .accordion-button {
-  color: #8E44FF;
+  color: var(--festival-green-dark);
   background-color: transparent;
   font-weight: 600;
 }
 
 .accordion-button:hover {
-  color: #FF6E6C;
+  color: var(--festival-orange);
 }
 
 .accordion-button:not(.collapsed) {
-  color: #8E44FF;
+  color: var(--festival-green-dark);
   background-color: #ffffff;
   font-weight: 700;
 }
@@ -145,41 +170,160 @@ strong,
   object-fit: cover;
   border-radius: 50%;
   margin-right: 15px;
+  border: 3px solid var(--festival-green-light);
+  transition: border-color 0.3s ease;
+}
+
+.artist-img:hover {
+  border-color: var(--festival-orange);
 }
 
 footer {
-  background-color: #ffffff;
-  color: #000000;
+  background-color: var(--festival-cream);
+  color: var(--festival-green-light);
   padding: 2rem 0;
   font-size: 0.95rem;
-  border-top: 4px solid #8E44FF;
+  border-top: 4px solid var(--festival-orange);
 }
 
 footer a {
-  color: #070707;
+  color: var(--festival-green-light);
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
+footer a:hover {
+  color: var(--festival-yellow);
+}
+
 footer .text-body-secondary {
-  color: #000000 !important;
+  color: var(--festival-green-light) !important;
 }
 
 .flash-message {
   padding: 1rem;
-  border-radius: 5px;
+  border-radius: 8px;
   margin: 1rem 0;
   font-weight: bold;
 }
 
 .flash-warning {
-  background-color: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
+  background-color: var(--festival-yellow);
+  color: var(--festival-green-dark);
+  border: 1px solid var(--festival-orange);
 }
 
 .carousel-image {
-    height: 400px; /* Altezza fissa - modifica secondo le tue esigenze */
-    object-fit: cover; /* Mantiene le proporzioni senza distorsioni */
-    object-position: center; /* Centra l'immagine */
+    height: 400px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 12px;
+}
+
+
+
+/* Sezione hero/banner */
+.hero-section {
+  background: linear-gradient(135deg, var(--festival-yellow), var(--festival-orange));
+  color: white;
+  padding: 60px 0;
+  border-radius: 15px;
+  margin-bottom: 30px;
+}
+
+.hero-section h1 {
+  color: white;
+  text-shadow: 2px 2px 4px rgba(44, 82, 52, 0.3);
+}
+
+.hero-section p {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Filtri e form */
+.filter-section {
+  background-color: rgba(144, 198, 149, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+select,
+.form-select,
+input[type="text"],
+input[type="email"],
+textarea {
+  border: 2px solid var(--festival-green-light);
+  color: var(--festival-green-dark);
+  background-color: white;
+  transition: border-color 0.3s ease;
+  border-radius: 8px;
+}
+
+select:focus,
+.form-select:focus,
+input:focus,
+textarea:focus {
+  border-color: var(--festival-orange);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+  outline: none;
+}
+
+/* Bottoni speciali */
+.btn-festival-primary {
+  background-color: var(--festival-orange);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-festival-primary:hover {
+  background-color: var(--festival-orange-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.3);
+}
+
+.btn-festival-secondary {
+  background-color: transparent;
+  color: var(--festival-green-dark);
+  border: 2px solid var(--festival-green-light);
+  padding: 12px 24px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-festival-secondary:hover {
+  background-color: var(--festival-green-light);
+  color: white;
+}
+
+/* Elementi decorativi */
+.festival-accent {
+  color: var(--festival-orange);
+}
+
+.festival-text-muted {
+  color: #5a7c65;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 40px 20px;
+  }
+  
+  .filter-section {
+    padding: 15px;
+  }
+}
+
+/* Accessibilità */
+button:focus,
+select:focus,
+a:focus {
+  outline: 3px solid var(--festival-sky);
+  outline-offset: 2px;
 }

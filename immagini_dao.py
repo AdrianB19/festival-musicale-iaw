@@ -1,4 +1,5 @@
 import sqlite3
+import os
 
 def get_immagini_performance(id_perf):
     
@@ -74,3 +75,38 @@ def get_immagini_perf(id_performance):
     conn.close()
 
     return [row[0] for row in res]
+
+
+
+def delete_immagini_performance(id_performance):
+    
+    select_sql = "SELECT url_immagine FROM has_immagini WHERE id_performance = ?"
+
+    conn = sqlite3.connect("soundwave.db")
+
+    cursor = conn.cursor()
+
+    cursor.execute(select_sql, (id_performance,))
+
+    immagini = cursor.fetchall()
+
+    for img in immagini:
+        nome_file_db = img[0]
+        nome_file_locale = os.path.basename(nome_file_db)  # solo il nome del file
+        path = os.path.join("static", "images", nome_file_locale)
+
+        if os.path.exists(path):
+            os.remove(path)
+            print(f"Eliminato: {path}")
+        else:
+            print(f"File non trovato: {path}")
+
+ 
+
+    sql = "DELETE FROM has_immagini WHERE id_performance = ?"
+    cursor.execute(sql, (id_performance,))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()

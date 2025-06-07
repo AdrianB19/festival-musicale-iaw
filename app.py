@@ -20,11 +20,6 @@ login_manager.init_app(app)
 # Costanti aggiornate
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "SVG", "WebP"}
 UPLOAD_FOLDER = 'static/images/'
-POST_IMG_WIDTH = 600  # per immagine artista principale
-CAROUSEL_IMG_WIDTH = 800  # per immagini carousel
-CAROUSEL_IMG_HEIGHT = 600  # altezza fissa per carousel
-CAROUSEL_IMG_QUALITY = 85  # qualità JPEG per ridurre peso file
-
 
 @app.route('/')
 def home():
@@ -165,7 +160,6 @@ def autenticare_utente():
     flash("Accesso effettuato con successo!", "success")
     return redirect(url_for("home"))
 
-
 #route unica per il profilo
 POST_IMG_WIDTH = 600  # larghezza fissa immagini
 @app.route("/profilo")
@@ -249,12 +243,11 @@ def profilo_organizzatore():
 @app.route("/nuova_performance", methods=["POST"])
 @login_required
 def nuova_performance():
-
     if session.get('tipo') != 'organizzatore':
         flash("Accesso proibito.", "danger")
         abort(403)
 
-    #campi dal form
+    # Campi dal form (identico al tuo codice)
     data = request.form.get("data")
     ora_inizio = request.form.get("ora_inizio")
     ora_fine = request.form.get("ora_fine")
@@ -265,122 +258,59 @@ def nuova_performance():
     nome_artista = request.form.get("nome_artista")
     uploaded_file = request.files["img_artista"]
 
-    # Validazione campi
+    # Validazione (identica al tuo codice)
     if not all([data, ora_inizio, ora_fine, genere, descrizione, id_palco, nome_artista]):
         flash("Errore: tutti i campi devono essere compilati.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
-    # il nome artista è univoco
     if performances_dao.artista_esiste(nome_artista):
         flash("Errore: esiste già una performance con questo nome artista.", "danger")
         return redirect(url_for("profilo_organizzatore"))
     
-    # converto in datetime 
+    # Controlli orari (identici al tuo codice)
     inizio_dt = datetime.strptime(ora_inizio, "%H:%M")
     fine_dt = datetime.strptime(ora_fine, "%H:%M")
 
-    # se fine è prima di inizio, considera che passa la mezzanotte
     if fine_dt <= inizio_dt:
         flash("L'ora di inizio deve essere precedente all'ora di fine.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
-    # controllo che inizio sia dopo le 14:00
     if inizio_dt.time() < datetime.strptime("14:00", "%H:%M").time():
         flash("L'ora di inizio deve essere dopo le 14:00.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
-    # durata massima non oltre 1.30 h
-    durata = fine_dt - inizio_dt
-    if durata > timedelta(hours=1, minutes=30):
+    if (fine_dt - inizio_dt) > timedelta(hours=1, minutes=30):
         flash("La performance non deve durare più di 90 minuti.", "danger")
         return redirect(url_for("profilo_organizzatore"))
     
-    # se deve esser pubblicata subito
     if visibilita == 1:
         if performances_dao.verifica_sovrapposizione(data, ora_inizio, ora_fine, id_palco):
             flash("Errore: performance sovrapposta a un'altra sullo stesso palco.", "danger")
             return redirect(url_for("profilo_organizzatore"))
 
-    img = Image.open(uploaded_file)
-    ext = uploaded_file.filename.rsplit(".", 1)[-1].lower()
-    if ext not in ALLOWED_EXTENSIONS:
-        flash("Errore: solo immagini PNG o JPG sono accettate.", "danger")
+    # PARTE SEMPLIFICATA - Salva immagine artista principale
+    nuovo_nome_foto = salva_immagine(uploaded_file, nome_artista)
+    if not nuovo_nome_foto:
+        flash("Errore: solo immagini PNG, JPG, JPEG, SVG o WebP sono accettate.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
-    #processo immagine artista principale
-    width, height = img.size
-    new_height = height / width * POST_IMG_WIDTH
-    size = POST_IMG_WIDTH, new_height
-    img.thumbnail(size, Image.Resampling.LANCZOS)
-    secondi = int(datetime.now().timestamp())
-    safe_nome_artista = nome_artista.lower().replace(" ", "_")
-    img.save(f"static/images/@{safe_nome_artista}-{secondi}.{ext}")
-    nuovo_nome_foto = f"images/@{safe_nome_artista}-{secondi}.{ext}"
-
+    # Crea performance (identico al tuo codice)
     performances_dao.nuova_performance(
         data, ora_inizio, ora_fine, descrizione,
         nome_artista, nuovo_nome_foto,
         genere, visibilita, id_palco, current_user.id
     )
 
-    id = performances_dao.get_id_by_artista(nome_artista) #è unique
+    id = performances_dao.get_id_by_artista(nome_artista)
 
-    # Processo immagini opzionali per carousel
+    # PARTE SEMPLIFICATA - Processo immagini carousel
     for i in range(1, 6):  
         file = request.files.get(f'foto{i}')
         if file and file.filename != '':
-            filename = secure_filename(file.filename)
-            base, ext = os.path.splitext(filename)
-
-            ext = ext.lower()
-            if ext.replace('.', '') not in ALLOWED_EXTENSIONS:
-                continue  # salta file con estensione non permessa
-
-            # Genera nome file unico per carousel
-            timestamp = int(datetime.now().timestamp())
-            carousel_filename = f"carousel_{safe_nome_artista}_{i}_{timestamp}{ext}"
-            file_path = os.path.join(UPLOAD_FOLDER, carousel_filename)
-
-            # Apri immagine con Pillow
-            img = Image.open(file)
-
-            # Ridimensiona per carousel con aspect ratio 4:3 (ottimo per carousel)
-            width, height = img.size
-            
-            # Calcola il crop per ottenere aspect ratio 4:3
-            target_ratio = CAROUSEL_IMG_WIDTH / CAROUSEL_IMG_HEIGHT  # 4:3 = 1.33
-            current_ratio = width / height
-            
-            if current_ratio > target_ratio:
-                # Immagine troppo larga, crop sui lati
-                new_width = int(height * target_ratio)
-                left = (width - new_width) // 2
-                img = img.crop((left, 0, left + new_width, height))
-            elif current_ratio < target_ratio:
-                # Immagine troppo alta, crop sopra/sotto
-                new_height = int(width / target_ratio)
-                top = (height - new_height) // 2
-                img = img.crop((0, top, width, top + new_height))
-            
-            # Ridimensiona alle dimensioni finali
-            img = img.resize((CAROUSEL_IMG_WIDTH, CAROUSEL_IMG_HEIGHT), Image.Resampling.LANCZOS)
-            
-            # Converti in RGB se necessario (per JPEG)
-            if img.mode in ('RGBA', 'LA', 'P'):
-                background = Image.new('RGB', img.size, (255, 255, 255))
-                if img.mode == 'P':
-                    img = img.convert('RGBA')
-                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-                img = background
-            
-            # Salva con compressione ottimizzata
-            if ext in ['.jpg', '.jpeg']:
-                img.save(file_path, 'JPEG', quality=CAROUSEL_IMG_QUALITY, optimize=True)
-            else:
-                img.save(file_path, 'PNG', optimize=True)
-
-            image_url = f'/static/images/{carousel_filename}'
-            immagini_dao.insert_immagine(id, image_url)
+            carousel_url = salva_immagine(file, nome_artista, "carousel_", i)
+            if carousel_url:
+                image_url = f'/static/{carousel_url}'
+                immagini_dao.insert_immagine(id, image_url)
 
     flash("Performance creata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
@@ -428,23 +358,20 @@ def pubblica_bozza(id):
     flash("Bozza pubblicata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
 
-
 # acquisto un biglietto verificando che non ne abbia g# modifica la bozza
 @app.route("/modifica_bozza/<int:id>", methods=["GET", "POST"])
 @login_required
 def modifica_bozza(id):
-
     if session.get('tipo') != 'organizzatore':
         flash("Accesso non autorizzato.", "danger")
         abort(403)
 
     bozza = performances_dao.get_bozza_by_id(id)
-
     if not bozza:
         flash("Bozza non trovata", "danger")
         return redirect(url_for("profilo_organizzatore"))
     
-    # dati dal form
+    # Dati dal form (identico al tuo codice)
     data = request.form.get("data")
     ora_inizio = request.form.get("ora_inizio")
     ora_fine = request.form.get("ora_fine")
@@ -455,11 +382,12 @@ def modifica_bozza(id):
     nome_artista = request.form.get("nome_artista")
     uploaded_file = request.files.get("img_artista")
 
+    # Validazione (identica al tuo codice)
     if not all([data, ora_inizio, ora_fine, genere, descrizione, id_palco, nome_artista]):
         flash("Errore: tutti i campi devono essere compilati.", "danger")
         return redirect(url_for("profilo_organizzatore"))
     
-    # Controlli base: ora inizio < ora fine && ora inizio >= 14:00
+    # Controlli base (identici al tuo codice)
     inizio_dt = datetime.strptime(ora_inizio, "%H:%M")
     fine_dt = datetime.strptime(ora_fine, "%H:%M")
 
@@ -475,110 +403,54 @@ def modifica_bozza(id):
         flash("La performance non deve durare più di 90 minuti.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
-    # Gestione immagine artista principale
+    # PARTE SEMPLIFICATA - Gestione immagine artista principale
     if uploaded_file and uploaded_file.filename != "":
-        ext = uploaded_file.filename.rsplit(".", 1)[-1].lower()
-        if ext not in ALLOWED_EXTENSIONS:
-            flash("Errore: solo immagini PNG o JPG sono accettate.", "danger")
+        img_artista_url = salva_immagine(uploaded_file, nome_artista)
+        if not img_artista_url:
+            flash("Errore: solo immagini PNG, JPG, JPEG, SVG o WebP sono accettate.", "danger")
             return redirect(url_for("profilo_organizzatore"))
-
-        img = Image.open(uploaded_file)
-        width, height = img.size
-        new_height = height / width * POST_IMG_WIDTH
-        img.thumbnail((POST_IMG_WIDTH, new_height), Image.Resampling.LANCZOS)
-        timestamp = int(datetime.now().timestamp())
-        safe_nome = nome_artista.lower().replace(" ", "_")
-        path_salvato = f"static/images/@{safe_nome}-{timestamp}.{ext}"
-        img.save(path_salvato)
-        img_artista_url = f"images/@{safe_nome}-{timestamp}.{ext}"
     else:
         img_artista_url = bozza["img_artista"]
 
-    # Aggiorna i dati nel DB
+    # Aggiorna i dati nel DB (identico al tuo codice)
     performances_dao.aggiorna_bozza(
         id, data, ora_inizio, ora_fine, descrizione,
         nome_artista, img_artista_url, genere, visibilita, id_palco
     )
 
     immagini_esistenti = immagini_dao.get_immagini_by_id_perf(id)
-    safe_nome_artista = nome_artista.lower().replace(" ", "_")
 
-    # Processo immagini opzionali per carousel
+    # PARTE SEMPLIFICATA - Processo immagini carousel
     for i in range(1, 6):
         file = request.files.get(f'foto{i}')
         if file and file.filename != '':
-            ext = file.filename.rsplit(".", 1)[-1].lower()
-            if ext not in ALLOWED_EXTENSIONS:
-                flash(f"Errore: 'foto{i}' ha un'estensione non valida.", "danger")
-                return redirect(url_for("profilo_organizzatore"))
+            carousel_url = salva_immagine(file, nome_artista, "carousel_", i)
+            if carousel_url:
+                nuovo_url = f"/static/{carousel_url}"
+                
+                # Gestisci aggiornamento/inserimento (identico al tuo codice)
+                if i <= len(immagini_esistenti):
+                    vecchio_url = immagini_esistenti[i - 1]
+                    immagini_dao.update_immagine_perf(id, vecchio_url, nuovo_url)
 
-            timestamp = int(datetime.now().timestamp())
-            # Nome file ottimizzato per carousel
-            filename = f"carousel_{safe_nome_artista}_{i}_{timestamp}.{ext}"
-            file_path = os.path.join("static", "images", filename)
-
-            # Apri immagine con Pillow
-            img = Image.open(file)
-
-            # Ridimensiona per carousel con aspect ratio 4:3
-            width, height = img.size
-            
-            # Calcola il crop per ottenere aspect ratio 4:3
-            target_ratio = CAROUSEL_IMG_WIDTH / CAROUSEL_IMG_HEIGHT  # 4:3 = 1.33
-            current_ratio = width / height
-            
-            if current_ratio > target_ratio:
-                # Immagine troppo larga, crop sui lati
-                new_width = int(height * target_ratio)
-                left = (width - new_width) // 2
-                img = img.crop((left, 0, left + new_width, height))
-            elif current_ratio < target_ratio:
-                # Immagine troppo alta, crop sopra/sotto
-                new_height = int(width / target_ratio)
-                top = (height - new_height) // 2
-                img = img.crop((0, top, width, top + new_height))
-            
-            # Ridimensiona alle dimensioni finali
-            img = img.resize((CAROUSEL_IMG_WIDTH, CAROUSEL_IMG_HEIGHT), Image.Resampling.LANCZOS)
-            
-            # Converti in RGB se necessario (per JPEG)
-            if img.mode in ('RGBA', 'LA', 'P'):
-                background = Image.new('RGB', img.size, (255, 255, 255))
-                if img.mode == 'P':
-                    img = img.convert('RGBA')
-                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-                img = background
-            
-            # Salva con compressione ottimizzata
-            if ext in ['jpg', 'jpeg']:
-                img.save(file_path, 'JPEG', quality=CAROUSEL_IMG_QUALITY, optimize=True)
-            else:
-                img.save(file_path, 'PNG', optimize=True)
-
-            nuovo_url = f"/static/images/{filename}"
-
-            # Gestisci aggiornamento/inserimento immagine
-            if i <= len(immagini_esistenti):
-                vecchio_url = immagini_esistenti[i - 1]
-                immagini_dao.update_immagine_perf(id, vecchio_url, nuovo_url)
-
-                # Rimuovi vecchia immagine se esiste
-                vecchio_path = vecchio_url.lstrip("/")
-                if os.path.exists(vecchio_path):
-                    os.remove(vecchio_path)
-            else:
-                immagini_dao.insert_immagine(id, nuovo_url)
+                    # Rimuovi vecchia immagine se esiste
+                    vecchio_path = vecchio_url.lstrip("/")
+                    if os.path.exists(vecchio_path):
+                        os.remove(vecchio_path)
+                else:
+                    immagini_dao.insert_immagine(id, nuovo_url)
 
     flash("Bozza aggiornata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
 
-@app.route("/elimina_bozza/<int:id>", methods=["POST"])
+@app.route("/elimina_performance/<int:id>", methods=["POST"])
 @login_required
-def elimina_bozza(id):
+def elimina_performance(id):
     if session.get('tipo') != 'organizzatore':
         abort(403)
+    immagini_dao.delete_immagini_performance(id)
     performances_dao.elimina_performance(id)
-    flash("Bozza eliminata.", "success")
+    flash("Performance eliminata.", "success")
     return redirect(url_for("profilo_organizzatore"))
 
 @app.route("/acquista_biglietto", methods=["POST"])
@@ -659,9 +531,45 @@ def acquista_biglietto():
     flash("Acquisto completato con successo!", "success")
     return redirect(url_for("profilo_partecipante"))
 
+def salva_immagine(file, nome_artista, prefisso="", numero=None):
+
+    if not file or file.filename == "":
+        return None
+    
+    # Controllo estensione
+    ext = file.filename.rsplit(".", 1)[-1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        return None
+    
+    # Genera nome file sicuro
+    safe_nome = nome_artista.lower().replace(" ", "_")
+    timestamp = int(datetime.now().timestamp())
+    
+    if numero:
+        filename = f"{prefisso}{safe_nome}_{numero}_{timestamp}.{ext}"
+    else:
+        filename = f"{prefisso}{safe_nome}_{timestamp}.{ext}"
+    
+    # Salva file senza ridimensionamento
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(file_path)
+    
+    return f"images/{filename}"
+
 # carica utente dal db in base al suo id
 @login_manager.user_loader
 def load_user(user_id):
+    user_data = utenti_dao.get_utente_id(user_id)
+    if user_data:
+        return User(
+            id=user_data[0], 
+            nome=user_data[1], 
+            cognome=user_data[2],
+            email=user_data[3],
+            password=user_data[4],
+            tipo=user_data[5]
+        )
+    return None
     user_data = utenti_dao.get_utente_id(user_id)
     if user_data:
         return User(

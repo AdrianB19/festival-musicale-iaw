@@ -45,37 +45,53 @@ Profilo Organizzatore
     </div>
   </form>
 
-  <!-- Sezione performance pubblicate -->
-  <h2 class="mb-4">Performance Pubblicate</h2>
-  <div class="row">
-    {% for perf in pubblicate %}
-    <div class="col-md-6 col-12 mb-4">
-      <a href="{{ url_for('dettaglio_performance', id=perf[0]) }}" class="text-decoration-none text-dark">
-        <div class="card h-100">
-          <div class="row g-0">
-            <div class="col-md-3 col-4 d-flex align-items-center justify-content-center p-3">
-              <img src="{{ url_for('static', filename=artisti[perf[0]][1]) }}" class="rounded-circle img-fluid"
-                style="width: 80px; height: 80px; object-fit: cover;" alt="Foto artista {{ artisti[perf[0]][1] }}">
-            </div>
-            <div class="col-md-9 col-8">
-              <div class="card-body">
-                <h5 class="card-title">{{ perf[5] }}</h5>
-                <p class="card-text"><strong>Artista:</strong> {{ artisti[perf[0]][0] }}</p>
-                <p class="card-text"><strong>Data:</strong> {{ perf[1] }}</p>
-                <p class="card-text"><strong>Ora:</strong> {{ perf[2] }} - {{ perf[3] }}</p>
-                <p class="card-text"><strong>Durata:</strong> {{ (perf[3][:2]|int - perf[2][:2]|int) * 60 +
-                  (perf[3][3:5]|int - perf[2][3:5]|int) }} minuti</p>
-                <p class="card-text"><strong>Descrizione:</strong> {{ perf[4] }}</p>
-                <p class="card-text"><strong>Genere:</strong> {{ perf[7] }}</p>
-                <p class="card-text"><strong>Palco:</strong> {{ perf[8] }}</p>
+  <div class="container">
+    <div class="row">
+      {% for perf in pubblicate %}
+      <div class="col-md-6 col-12 mb-4">
+        <div class="card h-100 position-relative">
+
+          <!-- Link all'intera card -->
+          <a href="{{ url_for('dettaglio_performance', id=perf[0]) }}"
+            class="text-decoration-none text-dark stretched-link position-relative z-0">
+            <div class="row g-0">
+              <div class="col-md-3 col-4 d-flex align-items-center justify-content-center p-3">
+                <img src="{{ url_for('static', filename=artisti[perf[0]][1]) }}" class="rounded-circle img-fluid"
+                  style="width: 80px; height: 80px; object-fit: cover;" alt="Foto artista {{ artisti[perf[0]][1] }}">
+              </div>
+              <div class="col-md-9 col-8">
+                <div class="card-body">
+                  <h5 class="card-title">{{ perf[5] }}</h5>
+                  <p class="card-text"><strong>Artista:</strong> {{ artisti[perf[0]][0] }}</p>
+                  <p class="card-text"><strong>Data:</strong> {{ perf[1] }}</p>
+                  <p class="card-text"><strong>Ora:</strong> {{ perf[2] }} - {{ perf[3] }}</p>
+                  <p class="card-text">
+                    <strong>Durata:</strong>
+                    {{ (perf[3][:2]|int - perf[2][:2]|int) * 60 + (perf[3][3:5]|int - perf[2][3:5]|int) }} minuti
+                  </p>
+                  <p class="card-text"><strong>Descrizione:</strong> {{ perf[4] }}</p>
+                  <p class="card-text"><strong>Genere:</strong> {{ perf[7] }}</p>
+                  <p class="card-text"><strong>Palco:</strong> {{ perf[8] }}</p>
+                </div>
               </div>
             </div>
+          </a>
+
+          {% if perf[9]|int == current_user.id %}
+          <!-- Bottone Elimina esterno al link, a tutta larghezza -->
+          <div class="p-3">
+            <form method="POST" action="{{ url_for('elimina_performance', id=perf[0]) }}">
+              <button class="btn btn-danger btn-sm w-100 position-relative z-1" type="submit">Elimina</button>
+            </form>
           </div>
+          {% endif %}
         </div>
-      </a>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
   </div>
+
+
 
   <hr class="my-5">
 
@@ -103,7 +119,7 @@ Profilo Organizzatore
               <div class="mt-3 d-flex flex-wrap gap-2">
                 <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
                   data-bs-target="#modalModificaBozza{{ bozza[0] }}">Modifica</button>
-                <form method="POST" action="{{ url_for('elimina_bozza', id=bozza[0]) }}" class="d-inline">
+                <form method="POST" action="{{ url_for('elimina_performance', id=bozza[0]) }}" class="d-inline">
                   <button class="btn btn-danger btn-sm" type="submit">Elimina</button>
                 </form>
                 <form method="post" action="{{ url_for('pubblica_bozza', id=bozza[0]) }}" class="d-inline">
@@ -189,14 +205,13 @@ Profilo Organizzatore
 
           <div class="mb-2">
             <label>Immagine artista</label>
-            <input type="file" name="img_artista" accept="image/jpg, image/png, image/jpeg" class="form-control"
-              required>
+            <input type="file" name="img_artista" accept="image/*" class="form-control" required>
           </div>
 
           {% for i in range(1, 6) %}
           <div class="mb-2">
             <label>Foto Opzionale {{ i }}</label>
-            <input type="file" name="foto{{ i }}" accept="image/jpg, image/png" class="form-control">
+            <input type="file" name="foto{{ i }}" accept="image/*" class="form-control">
           </div>
           {% endfor %}
 

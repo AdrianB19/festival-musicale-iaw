@@ -5,59 +5,172 @@ Dettaglio Performance
 {% endblock %}
 
 {% block contenuto %}
+<div class="container-fluid px-3 px-md-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3 text-center text-md-start">
+                Dettaglio Performance
+            </h2>
+        </div>
+    </div>
 
-<h2 class="mb-4">Dettaglio Performance</h2>
-<div class="container my-4 rounded-3 bg2">
-    <h5 class="mb-4">Ecco nel dettaglio la Performance con le eventuali immagini promozionali.</h5>
+    <!-- Main Content Card -->
+    <div class="card rounded-4 shadow-lg border-0">
+        <div class="card-body p-4 p-md-5 bg2 rounded-4">
+            <!-- Subtitle -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="text-center text-md-start mb-0">
+                        Ecco nel dettaglio la Performance con le eventuali immagini promozionali.
+                    </h5>
+                </div>
+            </div>
 
-    <div class="row">
-        <!-- Colonna sinistra: carosello -->
+            <!-- Main Content Row -->
+            <div class="row g-4 align-items-start">
+                <!-- Image Carousel Column -->
+                <div class="col-12 col-lg-6 order-1 order-lg-1">
+                    <div class="position-relative">
+                        <div id="carouselExample" class="carousel slide rounded-3 overflow-hidden shadow"
+                            data-bs-ride="carousel">
 
-        <div class="col-lg-6 mb-4">
-            <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <img src="{{ url_for('static', filename=performance['img_artista'] )}}"
-                            class="d-block w-100 carousel-image" alt="Immagine performance">
+                            <!-- Carousel Inner -->
+                            <div class="carousel-inner">
+                                <!-- Main Image -->
+                                <div class="carousel-item active">
+                                    <img src="{{ url_for('static', filename=performance['img_artista'] )}}"
+                                        class="d-block w-100 carousel-image" alt="Immagine performance">
+                                </div>
+
+                                <!-- Additional Images -->
+                                {% if immagini %}
+                                {% for url in immagini %}
+                                <div class="carousel-item">
+                                    <img src="{{ url }}" class="d-block w-100 carousel-image"
+                                        alt="Immagine performance">
+                                </div>
+                                {% endfor %}
+                                {% endif %}
+                            </div>
+
+                            <!-- Carousel Controls -->
+                            {% if immagini|length > 0 %}
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample"
+                                data-bs-slide="prev" aria-label="Immagine precedente">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Precedente</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carouselExample"
+                                data-bs-slide="next" aria-label="Immagine successiva">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Successiva</span>
+                            </button>
+                            {% endif %}
+
+                        </div>
                     </div>
-
-                    {% if immagini %}
-                    {% for url in immagini %}
-                    <div class="carousel-item">
-                        <img src="{{ url }}" class="d-block w-100 carousel-image" alt="Immagine performance">
-                    </div>
-                    {% endfor %}
-                    {% endif %}
                 </div>
 
-                <!-- Controlli manuali solo se ci sono più di un'immagine -->
-                {% if immagini|length > 0 %}
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample"
-                    data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Precedente</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample"
-                    data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Successiva</span>
-                </button>
-                {% endif %}
-            </div>
-        </div>
+                <!-- Performance Details Column -->
+                <div class="col-12 col-lg-6 order-2 order-lg-2">
+                    <div class="h-100">
+                        <!-- Artist Image -->
+                        <div class="text-center text-lg-start mb-4">
+                            <img src="{{ url_for('static', filename=performance['img_artista']) }}" alt="Foto artista"
+                                class="artist-img shadow-sm d-inline-block d-lg-block mb-3"
+                                style="width: 150px; height: 150px; border-radius: 15px;">
+                        </div>
 
-        <!-- Colonna destra: informazioni -->
-        <div class="col-lg-6">
-            <img src="{{ url_for('static', filename=performance['img_artista']) }}" alt="Foto artista"
-                class="img-fluid rounded mb-3 artist-img">
-            <h2><strong>Artista:</strong> {{ performance['nome_artista'] }}</h2>
-            <p><strong>Data:</strong> {{ performance['data'] }}</p>
-            <p><strong>Ora:</strong> {{ performance['ora_inizio'] }} - {{ performance['ora_fine'] }}</p>
-            <p><strong>Durata:</strong> {{ durata }} minuti</p>
-            <p><strong>Genere:</strong> {{ performance['genere'] }}</p>
-            <p><strong>Descrizione:</strong> {{ performance['descrizione'] }}</p>
-            <p><strong>Palco:</strong> {{ performance['nome_palco'] }}</p>
+                        <!-- Performance Information -->
+                        <div class="performance-details">
+                            <!-- Artist Name -->
+                            <div class="mb-4">
+                                <h2 class="mb-2">
+                                    <strong>Artista:</strong> {{ performance['nome_artista'] }}
+                                </h2>
+                            </div>
+
+                            <!-- Performance Details -->
+                            <div class="details-grid">
+                                <!-- Date -->
+                                <div class="mb-3">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body py-3">
+                                            <p class="mb-0">
+                                                <strong>Data:</strong> {{ performance['data'] }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Time -->
+                                <div class="mb-3">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body py-3">
+                                            <p class="mb-0">
+                                                <strong>Ora:</strong> {{ performance['ora_inizio'] }} - {{
+                                                performance['ora_fine'] }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Duration -->
+                                <div class="mb-3">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body py-3">
+                                            <p class="mb-0">
+                                                <strong>Durata:</strong> {{ durata }} minuti
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Genre -->
+                                <div class="mb-3">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body py-3">
+                                            <p class="mb-0">
+                                                <strong>Genere:</strong> {{ performance['genere'] }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Stage -->
+                                <div class="mb-3">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body py-3">
+                                            <p class="mb-0">
+                                                <strong>Palco:</strong> {{ performance['nome_palco'] }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if performance['descrizione'] %}
+                            <div class="mt-4">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <p class="mb-2">
+                                            <strong>Descrizione:</strong>
+                                        </p>
+                                        <p class="mb-0 text-muted">
+                                            {{ performance['descrizione'] }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+
 {% endblock %}

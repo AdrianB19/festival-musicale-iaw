@@ -1,4 +1,5 @@
 import sqlite3
+import os
 
 # aggiunge performance nel db
 def nuova_performance(data, ora_inizio, ora_fine,  descrizione, nome_artista, img_artista, genere, is_visibile, id_palco, id_organizzatore):
@@ -118,21 +119,6 @@ def get_bozze_organizzatore(id_organizzatore):
     conn.close()
 
     return results
-
-# eliminare performance se serve
-def elimina_performance(id_performance):
-    sql = "DELETE FROM performances WHERE id = ?"
-
-    conn = sqlite3.connect("soundwave.db")
-
-    cursor = conn.cursor()
-
-    cursor.execute(sql, (id_performance,))
-
-    conn.commit()
-
-    cursor.close()
-    conn.close()
 
 # ritorno i dettagli di una performance usate nel dettaglio, dato il suo id
 def get_performance_by_id(id):
@@ -342,7 +328,8 @@ def get_performances_filtrate(palco_id=None, data=None, genere=None):
             p1.nome_artista,
             p1.img_artista,
             p1.genere,
-            p2.nome AS nome_palco
+            p2.nome AS nome_palco,
+            p1.id_organizzatore
         FROM performances p1
         JOIN palchi p2 ON p1.id_palco = p2.id
         WHERE p1.is_visibile = 1
@@ -382,3 +369,30 @@ def get_performances_filtrate(palco_id=None, data=None, genere=None):
     conn.close()
     
     return results
+
+# eliminare performance se serve
+def elimina_performance(id_performance):
+
+    sql = "SELECT img_artista FROM performances WHERE id = ?"
+
+    conn = sqlite3.connect("soundwave.db")
+
+    cursor = conn.cursor()
+
+    cursor.execute(sql, (id_performance,))
+    result = cursor.fetchone()
+
+    if result and result[0]:
+        img_path_db = result[0]
+        img_filename = os.path.basename(img_path_db)
+        full_path = os.path.join("static", "images", img_filename)
+        os.remove(full_path)
+
+    sql = "DELETE FROM performances WHERE id = ?"
+    
+    cursor.execute(sql, (id_performance,))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
