@@ -4,113 +4,108 @@
 
 {% block contenuto %}
 
-
-<!-- Sezione Biglietto Acquistato -->
 {% if biglietto %}
 <div class="container mt-4">
-  <h2 class="mb-4">🎫 Il Tuo Biglietto</h2>
-  
-  <div class="card border-success shadow-lg">
-    <div class="card-header bg-success text-white">
+  <h2 class="mb-4 text-center text-md-start">Il Tuo Biglietto</h2>
+
+  <div class="card border-primary shadow-lg">
+    <div class="card-header bg2 text-white">
       <h5 class="mb-0">
-        <i class="bi bi-ticket-perforated"></i> 
+        <i class="bi bi-ticket-perforated"></i>
         Biglietto {{ biglietto[0] }} - Torino Soundwave 2025
       </h5>
     </div>
-    
+
     <div class="card-body">
       <div class="row">
-        
-        <!-- Colonna sinistra: Dettagli biglietto -->
-        <div class="col-md-8">
+        <div class="col-12">
+          <!-- Intestatario -->
           <div class="row mb-3">
-            <div class="col-sm-4"><strong>Tipo Biglietto:</strong></div>
-            <div class="col-sm-8">
-              <span class="badge bg-primary fs-6">{{ biglietto[0] }}</span>
-            </div>
-          </div>
-          
-          <div class="row mb-3">
-            <div class="col-sm-4"><strong>Prezzo:</strong></div>
-            <div class="col-sm-8">
-              <span class="text-success fs-5 fw-bold">€{{ biglietto[4] }}</span>
-            </div>
-          </div>
-          
-          <div class="row mb-3">
-            <div class="col-sm-4"><strong>Data Acquisto:</strong></div>
-            <div class="col-sm-8">{{ data }}</div>
-            <div class="col-sm-4"><strong>Ora Acquisto:</strong></div>
-            <div class="col-sm-8">{{ orario }}</div>
-          </div>
-          
-          <div class="row mb-3">
-            <div class="col-sm-4"><strong>Valido per:</strong></div>
-            <div class="col-sm-8">
-              {% if biglietto[0] == 'Giornaliero' and biglietto[1] %}
-                <span class="badge bg-info">{{ biglietto[1] }}</span>
-              {% elif biglietto[0] == 'Due giorni' and biglietto[2] and biglietto[3] %}
-                <span class="badge bg-info me-1">{{ biglietto[2] }}</span>
-                <span class="badge bg-info">{{ biglietto[3] }}</span>
-              {% elif biglietto[0] == 'Full pass' %}
-                <span class="badge bg-warning text-dark me-1">Venerdì 20 Giugno</span>
-                <span class="badge bg-warning text-dark me-1">Sabato 21 Giugno</span>
-                <span class="badge bg-warning text-dark">Domenica 22 Giugno</span>
+            <div class="col-6 col-sm-4"><strong>Intestatario:</strong></div>
+            <div class="col-6 col-sm-8">
+              {% if datiUser %}
+                {{ datiUser.nome }} {{ datiUser.cognome }}
+              {% elif current_user.is_authenticated %}
+                {{ current_user.nome }} {{ current_user.cognome }}
+              {% else %}
+                <em>Non disponibile</em>
               {% endif %}
             </div>
           </div>
-          
-          <!-- Informazioni importanti -->
+
+          <!-- Tipo Biglietto -->
+          <div class="row mb-3">
+            <div class="col-6 col-sm-4"><strong>Tipo Biglietto:</strong></div>
+            <div class="col-6 col-sm-8">
+              <span class="badge badge-corallo fs-6">{{ biglietto[0] }}</span>
+            </div>
+          </div>
+
+          <!-- Prezzo -->
+          <div class="row mb-3">
+            <div class="col-6 col-sm-4"><strong>Prezzo:</strong></div>
+            <div class="col-6 col-sm-8">
+              <span class="text-1 fs-5 fw-bold">€{{ biglietto[4] }}</span>
+            </div>
+          </div>
+
+          <!-- Data e ora -->
+          <div class="row mb-3">
+            <div class="col-6 col-sm-4"><strong>Data Acquisto:</strong></div>
+            <div class="col-6 col-sm-8">{{ data }}</div>
+            <div class="col-6 col-sm-4 mt-2 mt-sm-0"><strong>Ora Acquisto:</strong></div>
+            <div class="col-6 col-sm-8">{{ orario }}</div>
+          </div>
+
+          <!-- Validità -->
+          <div class="row mb-3">
+            <div class="col-12 col-sm-4"><strong>Valido per:</strong></div>
+            <div class="col-12 col-sm-8">
+              {% if biglietto[0] == 'Giornaliero' and biglietto[1] %}
+              <span class="badge bg-info mb-1">{{ biglietto[1] }}</span>
+              {% elif biglietto[0] == 'Due giorni' and biglietto[2] and biglietto[3] %}
+              <span class="badge bg-info mb-1 me-1">{{ biglietto[2] }}</span>
+              <span class="badge bg-info mb-1">{{ biglietto[3] }}</span>
+              {% elif biglietto[0] == 'Full pass' %}
+              <span class="badge bg-warning text-dark mb-1 me-1">Venerdì 20 Giugno</span>
+              <span class="badge bg-warning text-dark mb-1 me-1">Sabato 21 Giugno</span>
+              <span class="badge bg-warning text-dark mb-1">Domenica 22 Giugno</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Info -->
           <div class="alert alert-info mt-4">
             <h6><i class="bi bi-info-circle"></i> Informazioni Importanti</h6>
             <ul class="mb-0 small">
-              <li>Presenta questo QR code all'ingresso del festival</li>
               <li>È necessario un documento di identità valido</li>
               <li>Il biglietto è nominale e non trasferibile</li>
               <li>Conserva questo biglietto per tutta la durata dell'evento</li>
             </ul>
           </div>
         </div>
-        
-        <!-- Colonna destra: QR Code -->
-        <div class="col-md-4 text-center">
-          <div class="border rounded p-3 bg-light">
-            <h6 class="mb-3">QR Code Ingresso</h6>
-            
-            <!-- QR Code statico -->
-            <img src="{{ url_for('static', filename='qr_code_ticket.png') }}" 
-                 alt="QR Code Biglietto" 
-                 class="img-fluid mb-3" 
-                 style="width: 150px; height: 150px;">
-            
-            <!-- ID univoco del biglietto -->
-            <div class="small text-muted">
-              <strong>ID Biglietto:</strong><br>
-              <code>{{ session.user_id }}-{{ biglietto[0][:3]|upper }}-{{ data[:4] }}</code>
-            </div>
-          </div>
-        </div>
-        
       </div>
     </div>
-    
-    <!-- Footer con stato biglietto -->
+
     <div class="card-footer bg-light">
       <div class="row align-items-center">
-        <div class="col">
+        <div class="col-12 col-md">
           <small class="text-muted">
             <i class="bi bi-check-circle-fill text-success"></i>
             Biglietto valido e confermato
           </small>
         </div>
-        <div class="col-auto">
+        <div class="col-12 col-md-auto mt-2 mt-md-0 text-md-end text-center">
           <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
             <i class="bi bi-printer"></i> Stampa Biglietto
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% else %}
-<!-- Messaggio quando non ha biglietti -->
 <div class="container mt-4">
   <div class="alert alert-info text-center">
     <h5><i class="bi bi-ticket"></i> Nessun Biglietto Acquistato</h5>
@@ -121,6 +116,5 @@
   </div>
 </div>
 {% endif %}
-
 
 {% endblock %}

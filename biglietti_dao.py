@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import datetime
 
+# costruisco data formattata 
 def formatta_data(data_str):
     
     data = datetime.strptime(data_str, "%Y-%m-%d")
@@ -18,6 +19,7 @@ def formatta_data(data_str):
     
     return data_str, giorno_formattato
 
+# opzioni dei biglietti
 def get_opzioni_biglietti():
  
     sql = "SELECT tipo, single_day, double_first, double_second, prezzo FROM biglietti"
@@ -33,21 +35,19 @@ def get_opzioni_biglietti():
     cursor.close()
     conn.close()
     
-    # Inizializzazione del dizionario finale da restituire al template
-    # Ogni chiave corrisponde a un tipo di biglietto con una lista vuota
+    # mi agevola avere un dizionario dove per giornaliero ci sono date in forma yyyy-mm-dd e date in forma testuali e prezzo per agevolarmi nel form
     opzioni = {
         "giornaliero": [],
         "due_giorni": [],
         "full_pass": [] 
     }
     
-    # Iterazione attraverso tutti i record recuperati dal database
-    # Ogni riga contiene: tipo, single_day, double_first, double_second, prezzo
+    # ciclo e metti dati giusti nel dizionario
     for tipo, single_day, double_first, double_second, prezzo in results:
         
-        if tipo == "Giornaliero" and single_day:
+        if tipo == "Giornaliero" and single_day:  # single day non è nullo
 
-            giorno_iso, giorno_testo = formatta_data(single_day)
+            giorno_iso, giorno_testo = formatta_data(single_day)  # prendo giorno yyyy-mm-dd e data in modo esteso
 
             if giorno_iso and giorno_testo:
 
@@ -58,6 +58,7 @@ def get_opzioni_biglietti():
                     "prezzo": prezzo
                 })
 
+        # faccio lo stesso per due giorni
         elif tipo == "Due giorni" and double_first and double_second:
 
             giorno1_iso, giorno1_testo = formatta_data(double_first)
@@ -70,7 +71,7 @@ def get_opzioni_biglietti():
                     "giorni_testo": f"{giorno1_testo} e {giorno2_testo}",
                     "prezzo": prezzo
                 })
-
+        # se è full pass i campi della data sono null
         elif tipo == "Full pass":
 
             opzioni["full_pass"].append({

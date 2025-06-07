@@ -4,26 +4,30 @@
 
 {% block contenuto %}
 <div class="row mt-4">
-    <h1 class="display-6">Login</h1>
+    <h1 class="display-6 text-center">Login</h1>
 </div>
-<div class="row justify-content-md-center">
+<div class="row justify-content-center">
     <form action="/autenticare" method="post"
-        class="col-4 row bg-body-tertiary border border-light-subtle rounded-1 my-4">
-        <div class="col-12 p-3">
+        class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-4 bg-body-tertiary border border-light-subtle rounded-1 my-4 p-4">
+        
+        <div class="mb-3">
             <label for="txt_email" class="form-label">E-mail</label>
             <input type="email" class="form-control" name="txt_email" id="txt_email"
-                placeholder="Inserici la tua e-mail" required />
+                placeholder="Inserisci la tua e-mail" required />
         </div>
-        <div class="col-12 p-3">
+
+        <div class="mb-3">
             <label for="txt_password" class="form-label">Password</label>
             <input type="password" class="form-control" name="txt_password" id="txt_password"
                 placeholder="Inserisci la password" required />
         </div>
-        <div class="col-12 p-3">
-            <button type="submit" class="btn btn-primary">Invia</button>
+
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary w-100">Invia</button>
         </div>
-        <div class="col-12 p-3">
-            <small>Non hai ancora creato un account? <a href="{{url_for('signup')}}">Registrati</a></small>
+
+        <div class="text-center">
+            <small>Non hai ancora un account? <a href="{{ url_for('signup') }}">Registrati</a></small>
         </div>
     </form>
 </div>

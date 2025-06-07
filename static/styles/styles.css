@@ -1,0 +1,185 @@
+body {
+  background-color: #F7F9FB;
+  color: #1C1B29;
+  font-family: 'Poppins', sans-serif;
+}
+
+header {
+  background-color: #F7F9FB;
+  border-bottom: 2px solid #8E44FF;
+}
+
+header a span {
+  color: #8E44FF;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.nav-link {
+  color: #1C1B29;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover,
+.nav-link.active,
+.nav-link:focus {
+  color: #FF6E6C;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h5,
+.display-4,
+.text-1 {
+  color: #8E44FF;
+  font-weight: 700;
+}
+
+.about-page h2,
+.about-page h3 {
+  color: #1DD3B0;
+}
+
+strong,
+.evident {
+  color: #FF6E6C;
+  font-weight: 600;
+}
+
+.sottolineato-bold {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.username-viola {
+  color: #8E44FF !important;
+  /* Viola elettrico coerente col tema */
+}
+
+
+.badge-corallo {
+  background-color: #FF6E6C !important;
+  /* Corallo */
+  color: white !important;
+}
+
+.btn-primary {
+  background-color: #8E44FF;
+  border-color: #8E44FF;
+  color: white;
+  box-shadow: 0 4px 15px rgba(142, 68, 255, 0.5);
+}
+
+.btn-primary:hover {
+  background-color: #FF6E6C;
+  border-color: #FF6E6C;
+  box-shadow: 0 0 10px rgba(255, 110, 108, 0.4);
+}
+
+.btn-outline-primary {
+  color: #8E44FF;
+  border-color: #8E44FF;
+}
+
+.btn-outline-primary:hover {
+  background-color: #8E44FF;
+  color: white;
+}
+
+.btn-danger,
+.sfondo {
+  background-color: #FF6E6C;
+  border-color: #FF6E6C;
+}
+
+.btn-danger:hover {
+  background-color: #FF9800;
+  border-color: #FF9800;
+}
+
+.card {
+  background-color: white;
+  border: none;
+  box-shadow: 0 8px 20px rgba(28, 27, 41, 0.1);
+}
+
+.badge-highlight {
+  background-color: #FFD447;
+  color: #1C1B29;
+}
+
+.alert-info {
+  background-color: #FFD447;
+  color: #1C1B29;
+  box-shadow: 0 4px 15px rgba(255, 212, 71, 0.3);
+  border: none;
+}
+
+.accordion-header,
+.bg2 {
+  background-color: #ffe17e;
+}
+
+.accordion-button {
+  color: #8E44FF;
+  background-color: transparent;
+  font-weight: 600;
+}
+
+.accordion-button:hover {
+  color: #FF6E6C;
+}
+
+.accordion-button:not(.collapsed) {
+  color: #8E44FF;
+  background-color: #ffffff;
+  font-weight: 700;
+}
+
+.artist-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+footer {
+  background-color: #ffffff;
+  color: #000000;
+  padding: 2rem 0;
+  font-size: 0.95rem;
+  border-top: 4px solid #8E44FF;
+}
+
+footer a {
+  color: #070707;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+footer .text-body-secondary {
+  color: #000000 !important;
+}
+
+.flash-message {
+  padding: 1rem;
+  border-radius: 5px;
+  margin: 1rem 0;
+  font-weight: bold;
+}
+
+.flash-warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+.carousel-image {
+    height: 400px; /* Altezza fissa - modifica secondo le tue esigenze */
+    object-fit: cover; /* Mantiene le proporzioni senza distorsioni */
+    object-position: center; /* Centra l'immagine */
+}

@@ -31,7 +31,7 @@ def verifica_acquisto_utente(id_utente):
     cursor.close()
     conn.close()
 
-    return res[0] if res else None
+    return res[0] if res else None # è una tupla
     
 # dato l'id del partecipante  
 def get_biglietto_utente(id_utente):
@@ -95,6 +95,7 @@ def get_date_festival():
 
     return [row[0] for row in results if row[0]]
 
+# conto i biglietti per ciascuna data
 def count_biglietti_per_data():
 
     date_festival = get_date_festival()
@@ -124,12 +125,14 @@ def count_biglietti_per_data():
     cursor.close()
     conn.close()
     
+    # itero
     for tipo, single_day, double_first, double_second, num_biglietti in results:
         # cerco data giusta e +1
         if tipo == "Giornaliero" and single_day:
             if single_day in conteggio_per_data:
                 conteggio_per_data[single_day] += num_biglietti
         # + 1 nelle date
+
         elif tipo == "Due giorni" and double_first and double_second:
             if double_first in conteggio_per_data:
                 conteggio_per_data[double_first] += num_biglietti
@@ -161,56 +164,51 @@ def verifica_disponibilita_biglietto(tipo, single_day=None, double_first=None, d
 
     MAX_BIGLIETTI_PER_GIORNO = 200
     
-    try:
-        # date da verificare in base al tipo di biglietto
-        date_da_verificare = []
-        
-        if tipo == 'Giornaliero' and single_day:
-            date_da_verificare = [single_day]
-        elif tipo == 'Due giorni' and double_first and double_second:
-            date_da_verificare = [double_first, double_second]
-        elif tipo == 'Full pass':
-            date_da_verificare = get_date_festival()
-        else:
-            return {
-                'disponibile': False,
-                'messaggio': 'Tipo di biglietto non valido',
-                'dettagli': {}
-            }
-        
-        dettagli_conteggio = {}
-        date_non_disponibili = []
-        
-        for data in date_da_verificare:
-            conteggio = count_biglietti_per_singola_data(data)
-            dettagli_conteggio[data] = {
-                'venduti': conteggio,
-                'disponibili': MAX_BIGLIETTI_PER_GIORNO - conteggio,
-                'disponibile': conteggio < MAX_BIGLIETTI_PER_GIORNO
-            }
-            
-            if conteggio >= MAX_BIGLIETTI_PER_GIORNO:
-                date_non_disponibili.append(data)
-        
-        if date_non_disponibili:
-            return {
-                'disponibile': False,
-                'messaggio': f'Biglietti esauriti per le seguenti date: {", ".join(date_non_disponibili)}',
-                'dettagli': dettagli_conteggio
-            }
-        else:
-            return {
-                'disponibile': True,
-                'messaggio': 'Biglietto disponibile',
-                'dettagli': dettagli_conteggio
-            }
-            
-    except Exception as e:
+   
+    # date da verificare in base al tipo di biglietto
+    date_da_verificare = []
+    
+    if tipo == 'Giornaliero' and single_day:
+        date_da_verificare = [single_day]
+    elif tipo == 'Due giorni' and double_first and double_second:
+        date_da_verificare = [double_first, double_second]
+    elif tipo == 'Full pass':
+        date_da_verificare = get_date_festival()
+    else:
         return {
             'disponibile': False,
-            'messaggio': f'Errore nella verifica disponibilità: {str(e)}',
+            'messaggio': 'Tipo di biglietto non valido',
             'dettagli': {}
         }
+    
+    dettagli_conteggio = {}
+    date_non_disponibili = []
+    
+    for data in date_da_verificare:
+        conteggio = count_biglietti_per_singola_data(data) # chiamo funzione
+        dettagli_conteggio[data] = {
+            'venduti': conteggio,
+            'disponibili': MAX_BIGLIETTI_PER_GIORNO - conteggio,
+            'disponibile': conteggio < MAX_BIGLIETTI_PER_GIORNO
+        }
+        
+        if conteggio >= MAX_BIGLIETTI_PER_GIORNO:
+            date_non_disponibili.append(data)
+    
+    if date_non_disponibili:
+        return {
+            'disponibile': False,
+            'messaggio': f'Biglietti esauriti per le seguenti date: {", ".join(date_non_disponibili)}',
+            'dettagli': dettagli_conteggio
+        }
+    else:
+        return {
+            'disponibile': True,
+            'messaggio': 'Biglietto disponibile',
+            'dettagli': dettagli_conteggio
+        }
+            
+    
 
 def get_statistiche_disponibilita():
 
@@ -236,6 +234,7 @@ def get_statistiche_disponibilita():
     
     return statistiche
 
+# conto il numero di biglietti per singola data
 def count_biglietti_per_singola_data(data_specifica):
 
     sql = """
@@ -279,6 +278,7 @@ def count_biglietti_per_singola_data(data_specifica):
     
     return conteggio
 
+# per mostrarlo sul biglietto in area personale
 def get_data_acquisto(id_utente):
 
     sql = """
@@ -300,4 +300,5 @@ def get_data_acquisto(id_utente):
 
     str = res[0]
     data, orario = str.split(' ')
+
     return data, orario

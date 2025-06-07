@@ -2,12 +2,13 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from PIL import Image
 import os
 
-from models  import User, Biglietto, Performance, Palco
-import utenti_dao, biglietti_dao, performances_dao, palchi_dao , acquisti_dao
+from models  import User
+import utenti_dao, biglietti_dao, performances_dao, palchi_dao , acquisti_dao, immagini_dao
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secretpass"
@@ -16,23 +17,52 @@ app.config["SECRET_KEY"] = "secretpass"
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}  # formati di foto accettabili
-POST_IMG_WIDTH = 600 # profondità immagini
+# Costanti aggiornate
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "SVG", "WebP"}
+UPLOAD_FOLDER = 'static/images/'
+POST_IMG_WIDTH = 600  # per immagine artista principale
+CAROUSEL_IMG_WIDTH = 800  # per immagini carousel
+CAROUSEL_IMG_HEIGHT = 600  # altezza fissa per carousel
+CAROUSEL_IMG_QUALITY = 85  # qualità JPEG per ridurre peso file
 
-# pagina di inizio
+
 @app.route('/')
 def home():
-    #prendo le performances
-    performances = performances_dao.get_performances_pubbliche()
-    #dalle perforances faccio un dizionario con id - nome artista ed url_immagine
+    # Recupero i filtri dalla query string
+    palco_id = request.args.get('palco')
+    data = request.args.get('data')
+    genere = request.args.get('genere')
     
+    # Se ci sono filtri, uso la funzione filtrata, altrimenti quella standard
+    if palco_id or data or genere:
+        performances = performances_dao.get_performances_filtrate(
+            palco_id=palco_id,
+            data=data,
+            genere=genere
+        )
+    else:
+        performances = performances_dao.get_performances_pubbliche()
+    
+    # Creo il dizionario degli artisti
     artisti = {
-    perf[0]: (perf[5], perf[6])
-    for perf in performances
+        perf[0]: (perf[5], perf[6])
+        for perf in performances
     }
+    
+    # Recupero le opzioni per i filtri
+    palchi_disponibili = palchi_dao.get_palchi()
+    date_disponibili = performances_dao.get_date_disponibili()
+    generi_disponibili = performances_dao.get_generi_disponibili()
+    
     return render_template("home.html",
                           performances=performances,
-                          artisti=artisti)
+                          artisti=artisti,
+                          palchi_disponibili=palchi_disponibili,
+                          date_disponibili=date_disponibili,
+                          generi_disponibili=generi_disponibili,
+                          filtro_palco=palco_id,
+                          filtro_data=data,
+                          filtro_genere=genere)
 
 # form per il login che ti fa accedere salvando id, tipo utente
 @app.route("/login")
@@ -81,12 +111,19 @@ def subscribe():
         flash("Email già registrata!", "error")
         return redirect(url_for('signup'))
     
+    password = request.form.get('txt_password')
+    if len(password) < 8:
+        flash("La password deve contenere almeno 8 caratteri.", "error")
+        return redirect(url_for('signup'))
+
+    hashed_password = generate_password_hash(password)
+    
     #se non è nel db prendo altri campi e iniserisco un nuovo utente nel db
     utenti_dao.nuovo_utente(
         request.form.get('txt_nome'),
         request.form.get('txt_cognome'),
         email,
-        request.form.get('txt_password'),
+        hashed_password,
         request.form.get('tipo')
     )
     
@@ -94,38 +131,40 @@ def subscribe():
 
     return redirect(url_for('login'))
 
-# autentica un utente dopo il login
+# autenticazione login
 @app.route("/autenticare", methods=["POST"])
 def autenticare_utente():
-
     email = request.form.get("txt_email")
     password = request.form.get("txt_password")
 
     utente_db = utenti_dao.get_utente_email(email)
 
-    #se l'utente non è nel db errore e rimappo sulla home
     if not utente_db:
-        print("Credenziali non valide")
-        return redirect(url_for("home"))
-        
-    else:
-        user = User(
-            id=utente_db[0],
-            nome=utente_db[1],
-            cognome=utente_db[2],
-            email=utente_db[3],
-            password=utente_db[4],
-            tipo=utente_db[5],
-        )
+        flash("Credenziali non valide", "danger")
+        return redirect(url_for("login"))
 
-        login_user(user)
-        #salvo l'utente (id + tipo)
-        session['id'] = user.id
-        session['tipo'] = user.tipo
+    # utente_db[4] è la password hashata salvata nel DB
+    if not check_password_hash(utente_db[4], password):
+        flash("Credenziali non valide", "danger")
+        return redirect(url_for("login"))
 
-        flash("Accesso effettuato con successo!","success")
+    # Se la password è corretta, prosegui con il login
+    user = User(
+        id=utente_db[0],
+        nome=utente_db[1],
+        cognome=utente_db[2],
+        email=utente_db[3],
+        password=utente_db[4],  # hash nel DB (ok)
+        tipo=utente_db[5],
+    )
 
-        return redirect(url_for("home"))
+    login_user(user)
+    session['id'] = user.id
+    session['tipo'] = user.tipo
+
+    flash("Accesso effettuato con successo!", "success")
+    return redirect(url_for("home"))
+
 
 #route unica per il profilo
 POST_IMG_WIDTH = 600  # larghezza fissa immagini
@@ -168,29 +207,42 @@ def profilo_partecipante():
 
     return render_template("profilo_partecipante.html", biglietto=biglietto, data=data, orario = orario)
 
-# route per il profilo organizzatore, deve caricare perf pubblicate e bozze
 @app.route("/profilo_organizzatore", methods=["GET", "POST"])
 @login_required
 def profilo_organizzatore():
-
     if session.get('tipo') != 'organizzatore':
         flash("Accesso non autorizzato.", "danger")
         abort(404)
-    
-    pubblicate = performances_dao.get_performances_pubbliche_organizzatore(current_user.id)
+
+    palco_id = request.args.get('palco')
+    data = request.args.get('data')
+    genere = request.args.get('genere')
+
+    pubblicate = performances_dao.get_performances_filtrate(palco_id, data, genere)
     bozze = performances_dao.get_bozze_organizzatore(current_user.id)
+    
     palchi = palchi_dao.get_palchi()
+    date = performances_dao.get_date_disponibili()
+    generi = performances_dao.get_generi_disponibili()
 
     artisti = {
         perf[0]: (perf[5], perf[6]) for perf in pubblicate + bozze
     }
+
+    statistiche_disponibilita = acquisti_dao.get_statistiche_disponibilita()
 
     return render_template(
         "profilo_organizzatore.html",
         pubblicate=pubblicate,
         bozze=bozze,
         palchi=palchi,
-        artisti=artisti
+        date=date,
+        generi=generi,
+        filtro_palco=palco_id,
+        filtro_data=data,
+        filtro_genere=genere,
+        artisti=artisti,
+        statistiche_disponibilita=statistiche_disponibilita
     )
 
 # creo una nuova performance e leggo dati dal form
@@ -199,8 +251,8 @@ def profilo_organizzatore():
 def nuova_performance():
 
     if session.get('tipo') != 'organizzatore':
-        flash("Accesso non autorizzato.", "danger")
-        abort(404)
+        flash("Accesso proibito.", "danger")
+        abort(403)
 
     #campi dal form
     data = request.form.get("data")
@@ -255,8 +307,9 @@ def nuova_performance():
         flash("Errore: solo immagini PNG o JPG sono accettate.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
+    #processo immagine artista principale
     width, height = img.size
-    new_height = height /width *POST_IMG_WIDTH
+    new_height = height / width * POST_IMG_WIDTH
     size = POST_IMG_WIDTH, new_height
     img.thumbnail(size, Image.Resampling.LANCZOS)
     secondi = int(datetime.now().timestamp())
@@ -272,33 +325,78 @@ def nuova_performance():
 
     id = performances_dao.get_id_by_artista(nome_artista) #è unique
 
-    print("---------------------------------")
-    print(id)
-    print("------------------------------------")
+    # Processo immagini opzionali per carousel
+    for i in range(1, 6):  
+        file = request.files.get(f'foto{i}')
+        if file and file.filename != '':
+            filename = secure_filename(file.filename)
+            base, ext = os.path.splitext(filename)
 
-    # processo le immagini opzionali
+            ext = ext.lower()
+            if ext.replace('.', '') not in ALLOWED_EXTENSIONS:
+                continue  # salta file con estensione non permessa
+
+            # Genera nome file unico per carousel
+            timestamp = int(datetime.now().timestamp())
+            carousel_filename = f"carousel_{safe_nome_artista}_{i}_{timestamp}{ext}"
+            file_path = os.path.join(UPLOAD_FOLDER, carousel_filename)
+
+            # Apri immagine con Pillow
+            img = Image.open(file)
+
+            # Ridimensiona per carousel con aspect ratio 4:3 (ottimo per carousel)
+            width, height = img.size
+            
+            # Calcola il crop per ottenere aspect ratio 4:3
+            target_ratio = CAROUSEL_IMG_WIDTH / CAROUSEL_IMG_HEIGHT  # 4:3 = 1.33
+            current_ratio = width / height
+            
+            if current_ratio > target_ratio:
+                # Immagine troppo larga, crop sui lati
+                new_width = int(height * target_ratio)
+                left = (width - new_width) // 2
+                img = img.crop((left, 0, left + new_width, height))
+            elif current_ratio < target_ratio:
+                # Immagine troppo alta, crop sopra/sotto
+                new_height = int(width / target_ratio)
+                top = (height - new_height) // 2
+                img = img.crop((0, top, width, top + new_height))
+            
+            # Ridimensiona alle dimensioni finali
+            img = img.resize((CAROUSEL_IMG_WIDTH, CAROUSEL_IMG_HEIGHT), Image.Resampling.LANCZOS)
+            
+            # Converti in RGB se necessario (per JPEG)
+            if img.mode in ('RGBA', 'LA', 'P'):
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                img = background
+            
+            # Salva con compressione ottimizzata
+            if ext in ['.jpg', '.jpeg']:
+                img.save(file_path, 'JPEG', quality=CAROUSEL_IMG_QUALITY, optimize=True)
+            else:
+                img.save(file_path, 'PNG', optimize=True)
+
+            image_url = f'/static/images/{carousel_filename}'
+            immagini_dao.insert_immagine(id, image_url)
 
     flash("Performance creata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
 
 @app.route('/performance/<int:id>')
 def dettaglio_performance(id):
-    db = get_db()
-    cur = db.execute("SELECT * FROM performance WHERE id = ?", (id,))
-    perf = cur.fetchone()
 
-    immagini = []
-    img_dir = os.path.join(app.static_folder, 'performance_foto')
-    for i in range(1, 6):
-        img_path = f"{id}_{i}.jpg"
-        full_path = os.path.join(img_dir, img_path)
-        if os.path.exists(full_path):
-            immagini.append(f"performance_foto/{img_path}")
+    performance = performances_dao.get_performance_by_id(id)
 
-    durata = (int(perf['ora_fine'][:2]) - int(perf['ora_inizio'][:2])) * 60 + \
-             (int(perf['ora_fine'][3:5]) - int(perf['ora_inizio'][3:5]))
+    immagini = immagini_dao.get_immagini_by_id_perf(id)
 
-    return render_template('dettaglio_performance.html', performance=perf, immagini=immagini, durata=durata)
+    durata = (int(performance['ora_fine'][:2]) - int(performance['ora_inizio'][:2])) * 60 + \
+             (int(performance['ora_fine'][3:5]) - int(performance['ora_inizio'][3:5]))
+
+    return render_template('dettaglio_performance.html', performance=performance, immagini=immagini, durata=durata)
+
 # pubblica una bozza e verifica sovrapposizione / durata max
 @app.route("/pubblica_bozza/<int:id>", methods=["POST"])
 @login_required
@@ -308,7 +406,7 @@ def pubblica_bozza(id):
         flash("Accesso non autorizzato.", "danger")
         abort(404)
 
-    bozza = performances_dao.get_performance_by_id(id)
+    bozza = performances_dao.get_bozza_by_id(id)
 
     if not bozza:
         flash("Bozza non trovata.", "danger")
@@ -330,16 +428,17 @@ def pubblica_bozza(id):
     flash("Bozza pubblicata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
 
-# modifica la bozza
+
+# acquisto un biglietto verificando che non ne abbia g# modifica la bozza
 @app.route("/modifica_bozza/<int:id>", methods=["GET", "POST"])
 @login_required
 def modifica_bozza(id):
 
     if session.get('tipo') != 'organizzatore':
         flash("Accesso non autorizzato.", "danger")
-        abort(404)
+        abort(403)
 
-    bozza = performances_dao.get_performance_by_id(id)
+    bozza = performances_dao.get_bozza_by_id(id)
 
     if not bozza:
         flash("Bozza non trovata", "danger")
@@ -376,7 +475,7 @@ def modifica_bozza(id):
         flash("La performance non deve durare più di 90 minuti.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
-    # Gestione immagine
+    # Gestione immagine artista principale
     if uploaded_file and uploaded_file.filename != "":
         ext = uploaded_file.filename.rsplit(".", 1)[-1].lower()
         if ext not in ALLOWED_EXTENSIONS:
@@ -395,15 +494,93 @@ def modifica_bozza(id):
     else:
         img_artista_url = bozza["img_artista"]
 
+    # Aggiorna i dati nel DB
     performances_dao.aggiorna_bozza(
         id, data, ora_inizio, ora_fine, descrizione,
         nome_artista, img_artista_url, genere, visibilita, id_palco
     )
 
+    immagini_esistenti = immagini_dao.get_immagini_by_id_perf(id)
+    safe_nome_artista = nome_artista.lower().replace(" ", "_")
+
+    # Processo immagini opzionali per carousel
+    for i in range(1, 6):
+        file = request.files.get(f'foto{i}')
+        if file and file.filename != '':
+            ext = file.filename.rsplit(".", 1)[-1].lower()
+            if ext not in ALLOWED_EXTENSIONS:
+                flash(f"Errore: 'foto{i}' ha un'estensione non valida.", "danger")
+                return redirect(url_for("profilo_organizzatore"))
+
+            timestamp = int(datetime.now().timestamp())
+            # Nome file ottimizzato per carousel
+            filename = f"carousel_{safe_nome_artista}_{i}_{timestamp}.{ext}"
+            file_path = os.path.join("static", "images", filename)
+
+            # Apri immagine con Pillow
+            img = Image.open(file)
+
+            # Ridimensiona per carousel con aspect ratio 4:3
+            width, height = img.size
+            
+            # Calcola il crop per ottenere aspect ratio 4:3
+            target_ratio = CAROUSEL_IMG_WIDTH / CAROUSEL_IMG_HEIGHT  # 4:3 = 1.33
+            current_ratio = width / height
+            
+            if current_ratio > target_ratio:
+                # Immagine troppo larga, crop sui lati
+                new_width = int(height * target_ratio)
+                left = (width - new_width) // 2
+                img = img.crop((left, 0, left + new_width, height))
+            elif current_ratio < target_ratio:
+                # Immagine troppo alta, crop sopra/sotto
+                new_height = int(width / target_ratio)
+                top = (height - new_height) // 2
+                img = img.crop((0, top, width, top + new_height))
+            
+            # Ridimensiona alle dimensioni finali
+            img = img.resize((CAROUSEL_IMG_WIDTH, CAROUSEL_IMG_HEIGHT), Image.Resampling.LANCZOS)
+            
+            # Converti in RGB se necessario (per JPEG)
+            if img.mode in ('RGBA', 'LA', 'P'):
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+                img = background
+            
+            # Salva con compressione ottimizzata
+            if ext in ['jpg', 'jpeg']:
+                img.save(file_path, 'JPEG', quality=CAROUSEL_IMG_QUALITY, optimize=True)
+            else:
+                img.save(file_path, 'PNG', optimize=True)
+
+            nuovo_url = f"/static/images/{filename}"
+
+            # Gestisci aggiornamento/inserimento immagine
+            if i <= len(immagini_esistenti):
+                vecchio_url = immagini_esistenti[i - 1]
+                immagini_dao.update_immagine_perf(id, vecchio_url, nuovo_url)
+
+                # Rimuovi vecchia immagine se esiste
+                vecchio_path = vecchio_url.lstrip("/")
+                if os.path.exists(vecchio_path):
+                    os.remove(vecchio_path)
+            else:
+                immagini_dao.insert_immagine(id, nuovo_url)
+
     flash("Bozza aggiornata con successo!", "success")
     return redirect(url_for("profilo_organizzatore"))
 
-# acquisto un biglietto verificando che non ne abbia già acquistato uno, che ci sia disponibilita
+@app.route("/elimina_bozza/<int:id>", methods=["POST"])
+@login_required
+def elimina_bozza(id):
+    if session.get('tipo') != 'organizzatore':
+        abort(403)
+    performances_dao.elimina_performance(id)
+    flash("Bozza eliminata.", "success")
+    return redirect(url_for("profilo_organizzatore"))
+
 @app.route("/acquista_biglietto", methods=["POST"])
 @login_required
 def acquista_biglietto():

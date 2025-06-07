@@ -2,251 +2,60 @@
 {% block titolo %}Prova FAQ - Torino Soundwave{% endblock %}
 
 {% block contenuto %}
+<!-- Container principale con margine verticale e padding -->
+<div class="container my-5 px-3 px-md-0">
+    <!-- Riga centrata -->
+    <div class="row justify-content-center">
+        <!-- Colonna intera sia su mobile che su desktop -->
+        <div class="col-12 col-lg-10">
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <!-- Header -->
+            <!-- Header centrale -->
             <div class="text-center mb-5">
-                <h1 class="display-4 text-primary">Domande Frequenti</h1>
+                <!-- Titolo principale scalabile -->
+                <h1 class="display-5 display-md-4 ">Domande Frequenti</h1>
                 <p class="lead">Tutto quello che devi sapere sul Torino Sound Festival</p>
             </div>
 
-            <!-- FAQ Accordion -->
+            <!-- Accordion responsive di Bootstrap -->
             <div class="accordion" id="faqAccordion">
 
-                <!-- Biglietti -->
+                <!-- Ogni voce dell'accordion -->
+                {% for voce in [
+                    {"id": "Tickets", "icon": "ticket-perforated", "domanda": "Come posso acquistare i biglietti?", "contenuto": "I biglietti possono essere acquistati esclusivamente online attraverso il nostro sito web. Ogni biglietto è <strong>nominativo</strong> e sarà necessario presentare un documento d'identità valido all'ingresso. Ricorda che ogni persona può acquistare un solo biglietto."},
+                    {"id": "TicketTypes", "icon": "tags", "domanda": "Che tipi di biglietti sono disponibili?", "contenuto": "Offriamo tre tipologie di biglietti:<ul class='mt-2'><li><strong>Full Pass (3 giorni consecutivi):</strong> €55 - Accesso a tre giorni consecutivi del festival</li><li><strong>Biglietto 2 Giorni:</strong> €40 valido per due giorni consecutivi </li><li><strong>Biglietto Giornaliero:</strong> €25 </li></ul>I biglietti sono <strong>non rimborsabili</strong> una volta acquistati."},
+                    {"id": "Capacity", "icon": "people", "domanda": "Quante persone possono partecipare?", "contenuto": "Il festival ha una capienza limitata di <strong>200 persone per giorno</strong>. Questo ci permette di mantenere un'atmosfera intima e garantire a tutti i partecipanti un'esperienza di qualità. Ti consigliamo di acquistare i biglietti in anticipo!"},
+                    {"id": "Schedule", "icon": "clock", "domanda": "Quando si svolge il festival?", "contenuto": "Il Torino Sound Festival si svolge <strong>dal 20 al 22 giugno 2025</strong> presso il Parco Dora. Gli orari sono:<ul class='mt-2'><li><strong>Apertura cancelli:</strong> ore 14:00</li><li><strong>Chiusura:</strong> ore 24:00</li><li><strong>Prima esibizione:</strong> ore 15:00 circa</li><li><strong>Ultima esibizione:</strong> ore 23:30 circa</li></ul>"},
+                    {"id": "Location", "icon": "geo-alt", "domanda": "Dove si trova il Parco Dora?", "contenuto": "Il Parco Dora si trova in <strong>Corso Mortara, Torino</strong>. È facilmente raggiungibile con:<ul class='mt-2'><li><strong>Metro:</strong> Linea 1, fermata Bernini</li><li><strong>Autobus:</strong> Linee 11, 27, 51</li><li><strong>Tram:</strong> Linea 11</li></ul>Consulta la sezione \"Come raggiungerci\" nella pagina Chi Siamo."},
+                    {"id": "Target", "icon": "mortarboard", "domanda": "Il festival è solo per universitari?", "contenuto": "Il Torino Sound Festival è pensato principalmente per <strong>studenti universitari</strong>, ma è aperto a tutti i giovani che condividono la passione per la musica. Non è richiesta alcuna verifica dello status di studente."},
+                    {"id": "Stages", "icon": "music-note-beamed", "domanda": "Quanti palchi ci sono?", "contenuto": "Il festival dispone di <strong>3 palchi diversi</strong> distribuiti nel Parco Dora, ognuno con generi musicali differenti. Puoi spostarti liberamente tra i vari stage."},
+                    {"id": "WhatToBring", "icon": "backpack", "domanda": "Cosa posso portare al festival?", "contenuto": "<strong>Permesso:</strong><ul><li>Borracce e bottiglie d'acqua vuote</li><li>Coperte o teli</li><li>Crema solare e cappello</li><li>Smartphone e power bank</li></ul><strong>Vietato:</strong><ul><li>Bottiglie di vetro e lattine</li><li>Bevande alcoliche</li><li>Oggetti pericolosi</li><li>Registrazioni non autorizzate</li></ul>"},
+                    {"id": "Refunds", "icon": "arrow-counterclockwise", "domanda": "È possibile ottenere un rimborso?", "contenuto": "<strong>No, i biglietti sono non rimborsabili</strong> una volta acquistati. In caso di annullamento del festival per cause di forza maggiore, verranno fornite informazioni specifiche."},
+                    {"id": "Contact", "icon": "envelope", "domanda": "Come posso contattarvi per altre domande?", "contenuto": "Per domande puoi contattarci:<ul class='mt-2'><li><strong>Email:</strong> info@torinosoundfestival.it</li><li><strong>Instagram:</strong> @torinosoundfestival</li><li><strong>Telefono:</strong> +39 011 123 4567</li></ul>Rispondiamo entro 24 ore durante i giorni lavorativi."}
+                ] %}
                 <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingTickets">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseTickets" aria-expanded="true" aria-controls="collapseTickets">
-                            <i class="bi bi-ticket-perforated me-2"></i>
-                            Come posso acquistare i biglietti?
-                        </button>
-                    </h2>
-                    <div id="collapseTickets" class="accordion-collapse collapse show" aria-labelledby="headingTickets"
-                        data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            I biglietti possono essere acquistati esclusivamente online attraverso il nostro sito web.
-                            Ogni biglietto è <strong>nominativo</strong> e sarà necessario presentare un documento
-                            d'identità valido all'ingresso. Ricorda che ogni persona può acquistare un solo biglietto.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tipi di biglietti -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingTicketTypes">
+                    <!-- Header dell'accordion con icona e domanda -->
+                    <h2 class="accordion-header" id="heading{{ voce.id }}">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseTicketTypes" aria-expanded="false"
-                            aria-controls="collapseTicketTypes">
-                            <i class="bi bi-tags me-2"></i>
-                            Che tipi di biglietti sono disponibili?
+                            data-bs-target="#collapse{{ voce.id }}" aria-expanded="false"
+                            aria-controls="collapse{{ voce.id }}">
+                            <i class="bi bi-{{ voce.icon }} me-2"></i>
+                            {{ voce.domanda }}
                         </button>
                     </h2>
-                    <div id="collapseTicketTypes" class="accordion-collapse collapse"
-                        aria-labelledby="headingTicketTypes" data-bs-parent="#faqAccordion">
+                    <div id="collapse{{ voce.id }}" class="accordion-collapse collapse"
+                        aria-labelledby="heading{{ voce.id }}" data-bs-parent="#faqAccordion">
                         <div class="accordion-body">
-                            Offriamo due tipologie di biglietti:
-                            <ul class="mt-2">
-                                <li><strong>Full Pass (2 giorni consecutivi):</strong> €50 - Accesso a due giorni
-                                    consecutivi del festival</li>
-                                <li><strong>Biglietto Giornaliero:</strong> €25 (Sabato), €40 (Domenica), €50 (Lunedì)
-                                </li>
-                            </ul>
-                            I biglietti sono <strong>non rimborsabili</strong> una volta acquistati.
+                            {{ voce.contenuto|safe }}
                         </div>
                     </div>
                 </div>
-
-                <!-- Capienza -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingCapacity">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseCapacity" aria-expanded="false" aria-controls="collapseCapacity">
-                            <i class="bi bi-people me-2"></i>
-                            Quante persone possono partecipare?
-                        </button>
-                    </h2>
-                    <div id="collapseCapacity" class="accordion-collapse collapse" aria-labelledby="headingCapacity"
-                        data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            Il festival ha una capienza limitata di <strong>200 persone per giorno</strong>.
-                            Questo ci permette di mantenere un'atmosfera intima e garantire a tutti i partecipanti
-                            un'esperienza di qualità. Ti consigliamo di acquistare i biglietti in anticipo!
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Date e orari -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingSchedule">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseSchedule" aria-expanded="false" aria-controls="collapseSchedule">
-                            <i class="bi bi-clock me-2"></i>
-                            Quando si svolge il festival?
-                        </button>
-                    </h2>
-                    <div id="collapseSchedule" class="accordion-collapse collapse" aria-labelledby="headingSchedule"
-                        data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            Il Torino Sound Festival si svolge <strong>dal 20 al 22 giugno 2025</strong>
-                            (sabato, domenica e lunedì) presso il Parco Dora. Gli orari sono:
-                            <ul class="mt-2">
-                                <li><strong>Apertura cancelli:</strong> ore 14:00</li>
-                                <li><strong>Chiusura:</strong> ore 24:00</li>
-                                <li><strong>Prima esibizione:</strong> ore 15:00 circa</li>
-                                <li><strong>Ultima esibizione:</strong> ore 23:30 circa</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Location -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingLocation">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseLocation" aria-expanded="false" aria-controls="collapseLocation">
-                            <i class="bi bi-geo-alt me-2"></i>
-                            Dove si trova il Parco Dora?
-                        </button>
-                    </h2>
-                    <div id="collapseLocation" class="accordion-collapse collapse" aria-labelledby="headingLocation"
-                        data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            Il Parco Dora si trova in <strong>Corso Mortara, Torino</strong>. È facilmente raggiungibile
-                            con:
-                            <ul class="mt-2">
-                                <li><strong>Metro:</strong> Linea 1, fermata Bernini</li>
-                                <li><strong>Autobus:</strong> Linee 11, 27, 51</li>
-                                <li><strong>Tram:</strong> Linea 11</li>
-                            </ul>
-                            Per maggiori dettagli consulta la sezione "Come raggiungerci" nella pagina Chi Siamo.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Target -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingTarget">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseTarget" aria-expanded="false" aria-controls="collapseTarget">
-                            <i class="bi bi-mortarboard me-2"></i>
-                            Il festival è solo per universitari?
-                        </button>
-                    </h2>
-                    <div id="collapseTarget" class="accordion-collapse collapse" aria-labelledby="headingTarget"
-                        data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            Il Torino Sound Festival è pensato principalmente per <strong>studenti
-                                universitari</strong>,
-                            ma è aperto a tutti i giovani che condividono la passione per la musica.
-                            L'atmosfera e la programmazione sono orientate verso un pubblico universitario,
-                            ma non è richiesta alcuna verifica dello status di studente.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Palchi -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingStages">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseStages" aria-expanded="false" aria-controls="collapseStages">
-                            <i class="bi bi-music-note-beamed me-2"></i>
-                            Quanti palchi ci sono?
-                        </button>
-                    </h2>
-                    <div id="collapseStages" class="accordion-collapse collapse" aria-labelledby="headingStages"
-                        data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            Il festival dispone di <strong>3 palchi diversi</strong> distribuiti nel Parco Dora.
-                            Ogni palco avrà una programmazione specifica con generi musicali diversi,
-                            permettendo ai partecipanti di scegliere la propria esperienza musicale ideale
-                            e di spostarsi liberamente tra i vari stage.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cosa portare -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingWhatToBring">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseWhatToBring" aria-expanded="false"
-                            aria-controls="collapseWhatToBring">
-                            <i class="bi bi-backpack me-2"></i>
-                            Cosa posso portare al festival?
-                        </button>
-                    </h2>
-                    <div id="collapseWhatToBring" class="accordion-collapse collapse"
-                        aria-labelledby="headingWhatToBring" data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            <strong>Permesso:</strong>
-                            <ul>
-                                <li>Borracce e bottiglie d'acqua vuote (riempibili alle fontanelle)</li>
-                                <li>Coperte o teli per sedersi</li>
-                                <li>Crema solare e cappello</li>
-                                <li>Smartphone e power bank</li>
-                            </ul>
-                            <strong>Vietato:</strong>
-                            <ul>
-                                <li>Bottiglie di vetro e lattine</li>
-                                <li>Bevande alcoliche</li>
-                                <li>Oggetti appuntiti o pericolosi</li>
-                                <li>Registrazioni audio/video senza autorizzazione</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Rimborsi -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingRefunds">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseRefunds" aria-expanded="false" aria-controls="collapseRefunds">
-                            <i class="bi bi-arrow-counterclockwise me-2"></i>
-                            È possibile ottenere un rimborso?
-                        </button>
-                    </h2>
-                    <div id="collapseRefunds" class="accordion-collapse collapse" aria-labelledby="headingRefunds"
-                        data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            <strong>No, i biglietti sono non rimborsabili</strong> una volta acquistati.
-                            Ti preghiamo di verificare attentamente le date e la tua disponibilità prima dell'acquisto.
-                            In caso di annullamento del festival per cause di forza maggiore,
-                            verranno fornite informazioni specifiche sui rimborsi.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Contatti -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingContact">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseContact" aria-expanded="false" aria-controls="collapseContact">
-                            <i class="bi bi-envelope me-2"></i>
-                            Come posso contattarvi per altre domande?
-                        </button>
-                    </h2>
-                    <div id="collapseContact" class="accordion-collapse collapse" aria-labelledby="headingContact"
-                        data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            Per qualsiasi domanda non presente in questa sezione, puoi contattarci:
-                            <ul class="mt-2">
-                                <li><strong>Email:</strong> info@torinosoundfestival.it</li>
-                                <li><strong>Instagram:</strong> @torinosoundfestival</li>
-                                <li><strong>Telefono:</strong> +39 011 123 4567</li>
-                            </ul>
-                            Il nostro team risponde solitamente entro 24 ore durante i giorni lavorativi.
-                        </div>
-                    </div>
-                </div>
-
+                {% endfor %}
             </div>
 
-            <!-- Messaggio finale -->
+            <!-- Messaggio finale in un alert informativo -->
             <div class="text-center mt-5">
                 <div class="alert alert-info">
-                    <i class="bi bi-lightbulb me-2"></i>
+                    <i class="bi bi-lightbulb me-2 .badge-highlight"></i>
                     <strong>Non hai trovato la risposta che cercavi?</strong>
                     Contattaci direttamente e saremo felici di aiutarti!
                 </div>
@@ -254,6 +63,4 @@
         </div>
     </div>
 </div>
-
-
 {% endblock %}

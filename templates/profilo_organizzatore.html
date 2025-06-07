@@ -6,39 +6,71 @@ Profilo Organizzatore
 
 {% block contenuto %}
 <div class="container">
+  <h2 class="mb-4">Filtra Performances</h2>
+  <!-- Filtri -->
+  <form method="GET" class="mb-4">
+    <div class="row g-3">
+      <div class="col-md-4 col-12">
+        <label class="form-label">Palco</label>
+        <select name="palco" class="form-select">
+          <option value="">Tutti</option>
+          {% for palco in palchi %}
+          <option value="{{ palco[0] }}" {% if filtro_palco==palco[0]|string %}selected{% endif %}>{{ palco[1] }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4 col-12">
+        <label class="form-label">Data</label>
+        <select name="data" class="form-select">
+          <option value="">Tutte</option>
+          {% for d in date %}
+          <option value="{{ d.iso }}" {% if filtro_data==d.iso %}selected{% endif %}>{{ d.formattata }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4 col-12">
+        <label class="form-label">Genere</label>
+        <select name="genere" class="form-select">
+          <option value="">Tutti</option>
+          {% for g in generi %}
+          <option value="{{ g }}" {% if filtro_genere==g %}selected{% endif %}>{{ g }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="mt-3 d-flex flex-wrap gap-2">
+      <button class="btn btn-primary" type="submit">Applica Filtri</button>
+      <a href="{{ url_for('profilo_organizzatore') }}" class="btn btn-secondary">Rimuovi Filtri</a>
+    </div>
+  </form>
 
   <!-- Sezione performance pubblicate -->
   <h2 class="mb-4">Performance Pubblicate</h2>
-
   <div class="row">
     {% for perf in pubblicate %}
-    <div class="col-md-6 mb-4">
+    <div class="col-md-6 col-12 mb-4">
       <a href="{{ url_for('dettaglio_performance', id=perf[0]) }}" class="text-decoration-none text-dark">
-        <div class="card">
-          <div class="row g-0 h-100">
-            <!-- Immagine artista a sinistra centrata -->
-            <div class="col-md-3 d-flex align-items-center justify-content-center p-3">
-              <img src="{{ url_for('static', filename=artisti[perf[0]][1]) }}" class="rounded-circle"
+        <div class="card h-100">
+          <div class="row g-0">
+            <div class="col-md-3 col-4 d-flex align-items-center justify-content-center p-3">
+              <img src="{{ url_for('static', filename=artisti[perf[0]][1]) }}" class="rounded-circle img-fluid"
                 style="width: 80px; height: 80px; object-fit: cover;" alt="Foto artista {{ artisti[perf[0]][1] }}">
             </div>
-            <!-- Dettagli performance pubblicata -->
-            <div class="col-md-9">
+            <div class="col-md-9 col-8">
               <div class="card-body">
                 <h5 class="card-title">{{ perf[5] }}</h5>
                 <p class="card-text"><strong>Artista:</strong> {{ artisti[perf[0]][0] }}</p>
                 <p class="card-text"><strong>Data:</strong> {{ perf[1] }}</p>
                 <p class="card-text"><strong>Ora:</strong> {{ perf[2] }} - {{ perf[3] }}</p>
-                <p class="card-text"><strong>Durata:</strong>
-                  {{ (perf[3][:2]|int - perf[2][:2]|int) * 60 + (perf[3][3:5]|int - perf[2][3:5]|int) }} minuti
-                </p>
+                <p class="card-text"><strong>Durata:</strong> {{ (perf[3][:2]|int - perf[2][:2]|int) * 60 +
+                  (perf[3][3:5]|int - perf[2][3:5]|int) }} minuti</p>
                 <p class="card-text"><strong>Descrizione:</strong> {{ perf[4] }}</p>
                 <p class="card-text"><strong>Genere:</strong> {{ perf[7] }}</p>
                 <p class="card-text"><strong>Palco:</strong> {{ perf[8] }}</p>
               </div>
             </div>
-
           </div>
-
         </div>
       </a>
     </div>
@@ -48,45 +80,38 @@ Profilo Organizzatore
   <hr class="my-5">
 
   <!-- Sezione bozze performance -->
-  <h3>Le tue bozze</h3>
+  <h2>Le tue bozze</h2>
   <div class="row">
     {% for bozza in bozze %}
-    <div class="col-md-6 mb-4">
-      <div class="card border-warning shadow-sm">
-        <div class="row g-0 h-100">
-
-          <!-- Immagine artista a sinistra centrata -->
-          <div class="col-md-3 d-flex align-items-center justify-content-center p-3">
-            <img src="{{ url_for('static', filename=artisti[bozza[0]][1]) }}" class="rounded-circle"
+    <div class="col-md-6 col-12 mb-4">
+      <div class="card border-warning shadow-sm h-100">
+        <div class="row g-0">
+          <div class="col-md-3 col-4 d-flex align-items-center justify-content-center p-3">
+            <img src="{{ url_for('static', filename=artisti[bozza[0]][1]) }}" class="rounded-circle img-fluid"
               style="width: 80px; height: 80px; object-fit: cover;" alt="Foto artista {{ artisti[bozza[0]][0] }}">
           </div>
-
-          <!-- Dettagli della bozza -->
-          <div class="col-md-9">
+          <div class="col-md-9 col-8">
             <div class="card-body">
               <h5 class="card-title">{{ bozza[5] }}</h5>
-              <p class="card-text"><strong>Artista:</strong> {{ artisti[bozza[0]][0] }}</p>
               <p class="card-text"><strong>Data:</strong> {{ bozza[1] }}</p>
               <p class="card-text"><strong>Ora:</strong> {{ bozza[2] }} - {{ bozza[3] }}</p>
-              <p class="card-text"><strong>Durata:</strong>
-                {{ (bozza[3][:2]|int - bozza[2][:2]|int) * 60 + (bozza[3][3:5]|int - bozza[2][3:5]|int) }} minuti
-              </p>
+              <p class="card-text"><strong>Durata:</strong> {{ (bozza[3][:2]|int - bozza[2][:2]|int) * 60 +
+                (bozza[3][3:5]|int - bozza[2][3:5]|int) }} minuti</p>
               <p class="card-text"><strong>Descrizione:</strong> {{ bozza[4] }}</p>
-              <p class="card-text"><strong>Genere:</strong> {{ bozza[5] }}</p>
+              <p class="card-text"><strong>Genere:</strong> {{ bozza[7] }}</p>
               <p class="card-text"><strong>Palco:</strong> {{ bozza[8] }}</p>
-
-              <div class="mt-3">
+              <div class="mt-3 d-flex flex-wrap gap-2">
                 <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                  data-bs-target="#modalModificaBozza{{ bozza[0] }}">
-                  Modifica
-                </button>
+                  data-bs-target="#modalModificaBozza{{ bozza[0] }}">Modifica</button>
+                <form method="POST" action="{{ url_for('elimina_bozza', id=bozza[0]) }}" class="d-inline">
+                  <button class="btn btn-danger btn-sm" type="submit">Elimina</button>
+                </form>
                 <form method="post" action="{{ url_for('pubblica_bozza', id=bozza[0]) }}" class="d-inline">
                   <button class="btn btn-success btn-sm" type="submit">Pubblica</button>
                 </form>
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
@@ -95,11 +120,12 @@ Profilo Organizzatore
 
   <!-- Bottone nuova performance -->
   <div class="text-end my-4">
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNuovaPerformance">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuovaPerformance">
       <i class="bi bi-plus-circle"></i> Nuova Performance
     </button>
   </div>
 
+  <!-- Il resto dei modali e statistiche rimane invariato perché già responsive grazie a Bootstrap -->
   <!-- MODAL: Form per aggiungere una nuova performance -->
   <div class="modal fade" id="modalNuovaPerformance" tabindex="-1" aria-labelledby="modalNuovaPerformanceLabel"
     aria-hidden="true">
@@ -163,7 +189,8 @@ Profilo Organizzatore
 
           <div class="mb-2">
             <label>Immagine artista</label>
-            <input type="file" name="img_artista" accept="image/jpg, image/png" class="form-control" required>
+            <input type="file" name="img_artista" accept="image/jpg, image/png, image/jpeg" class="form-control"
+              required>
           </div>
 
           {% for i in range(1, 6) %}
@@ -256,6 +283,40 @@ Profilo Organizzatore
     </div>
   </div>
   {% endfor %}
+</div>
+
+<h2 class="mb-4">Monitora vendite</h2>
+<!-- NUOVO: Sezione Statistiche Disponibilità -->
+{% if statistiche_disponibilita %}
+<div class="card mb-4 badge-highlight text-white">
+  <div class="card-body">
+    <h6 class="card-title text-1">📊 Disponibilità Biglietti per Data</h6>
+    <div class="row">
+      {% for data, stats in statistiche_disponibilita.items() %}
+      <div class="col-md-4 mb-2">
+        <div class="card bg-light text-dark">
+          <div class="card-body p-2">
+            <small class="fw-bold">{{ data }}</small><br>
+            <small>
+              Disponibili: <span
+                class="fw-bold {% if stats.disponibili < 50 %}text-1{% elif stats.disponibili < 100 %}text-warning{% else %}text-1{% endif %}">
+                {{ stats.disponibili }}/{{ stats.totale }}
+              </span>
+            </small>
+            <div class="progress mt-1" style="height: 8px;">
+              <div
+                class="progress-bar {% if stats.percentuale_venduta >= 90 %}bg-danger{% elif stats.percentuale_venduta >= 70 %}bg-warning{% else %}bg-success{% endif %}"
+                style="width: {{ stats.percentuale_venduta }}%"></div>
+            </div>
+            <small class="text-muted">{{ stats.percentuale_venduta }}% venduti</small>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
 
 </div>
 {% endblock %}
