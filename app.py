@@ -13,12 +13,11 @@ import utenti_dao, biglietti_dao, performances_dao, palchi_dao , acquisti_dao, i
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secretpass"
 
-#inizializzazione del login manager
+# inizializzazione del login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-# Costanti aggiornate
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "SVG", "WebP"}
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "SVG", "WebP", "webp", "avif"}
 UPLOAD_FOLDER = 'static/images/'
 
 @app.route('/')
@@ -362,6 +361,7 @@ def pubblica_bozza(id):
 @app.route("/modifica_bozza/<int:id>", methods=["GET", "POST"])
 @login_required
 def modifica_bozza(id):
+
     if session.get('tipo') != 'organizzatore':
         flash("Accesso non autorizzato.", "danger")
         abort(403)
@@ -371,7 +371,7 @@ def modifica_bozza(id):
         flash("Bozza non trovata", "danger")
         return redirect(url_for("profilo_organizzatore"))
     
-    # Dati dal form (identico al tuo codice)
+    # dati dal form 
     data = request.form.get("data")
     ora_inizio = request.form.get("ora_inizio")
     ora_fine = request.form.get("ora_fine")
@@ -382,12 +382,12 @@ def modifica_bozza(id):
     nome_artista = request.form.get("nome_artista")
     uploaded_file = request.files.get("img_artista")
 
-    # Validazione (identica al tuo codice)
+    # validazione 
     if not all([data, ora_inizio, ora_fine, genere, descrizione, id_palco, nome_artista]):
         flash("Errore: tutti i campi devono essere compilati.", "danger")
         return redirect(url_for("profilo_organizzatore"))
     
-    # Controlli base (identici al tuo codice)
+    # controlli base 
     inizio_dt = datetime.strptime(ora_inizio, "%H:%M")
     fine_dt = datetime.strptime(ora_fine, "%H:%M")
 
@@ -403,7 +403,6 @@ def modifica_bozza(id):
         flash("La performance non deve durare più di 90 minuti.", "danger")
         return redirect(url_for("profilo_organizzatore"))
 
-    # PARTE SEMPLIFICATA - Gestione immagine artista principale
     if uploaded_file and uploaded_file.filename != "":
         img_artista_url = salva_immagine(uploaded_file, nome_artista)
         if not img_artista_url:
@@ -412,7 +411,6 @@ def modifica_bozza(id):
     else:
         img_artista_url = bozza["img_artista"]
 
-    # Aggiorna i dati nel DB (identico al tuo codice)
     performances_dao.aggiorna_bozza(
         id, data, ora_inizio, ora_fine, descrizione,
         nome_artista, img_artista_url, genere, visibilita, id_palco
@@ -420,15 +418,13 @@ def modifica_bozza(id):
 
     immagini_esistenti = immagini_dao.get_immagini_by_id_perf(id)
 
-    # PARTE SEMPLIFICATA - Processo immagini carousel
     for i in range(1, 6):
         file = request.files.get(f'foto{i}')
         if file and file.filename != '':
             carousel_url = salva_immagine(file, nome_artista, "carousel_", i)
             if carousel_url:
                 nuovo_url = f"/static/{carousel_url}"
-                
-                # Gestisci aggiornamento/inserimento (identico al tuo codice)
+
                 if i <= len(immagini_esistenti):
                     vecchio_url = immagini_esistenti[i - 1]
                     immagini_dao.update_immagine_perf(id, vecchio_url, nuovo_url)
@@ -446,6 +442,7 @@ def modifica_bozza(id):
 @app.route("/elimina_performance/<int:id>", methods=["POST"])
 @login_required
 def elimina_performance(id):
+
     if session.get('tipo') != 'organizzatore':
         abort(403)
     immagini_dao.delete_immagini_performance(id)
@@ -481,22 +478,20 @@ def acquista_biglietto():
     double_first = None
     double_second = None
     
-    try:
-        if tipo == 'Giornaliero':
-            single_day = start_date
-        elif tipo == 'Due giorni':
-            giorni = start_date.split(",")
-            if len(giorni) != 2:
-                raise ValueError("Formato date non valido per Due Giorni")
-            double_first, double_second = [g.strip() for g in giorni]
-        elif tipo != 'Full pass':
-            flash("Tipo biglietto non valido!", "danger")
-            return redirect(url_for("biglietti"))
-    except ValueError as e:
-        flash(f"Errore nei dati inseriti: {str(e)}", "danger")
+
+    if tipo == 'Giornaliero':
+        single_day = start_date
+    elif tipo == 'Due giorni':
+        giorni = start_date.split(",")
+        if len(giorni) != 2:
+            raise ValueError("Formato date non valido per Due Giorni")
+        double_first, double_second = [g.strip() for g in giorni]
+    elif tipo != 'Full pass':
+        flash("Tipo biglietto non valido!", "danger")
         return redirect(url_for("biglietti"))
+
     
-    # NUOVO: Verifica disponibilità biglietti
+    # verifico la disponibilità biglietti
     disponibilita = acquisti_dao.verifica_disponibilita_biglietto(
         tipo, single_day, double_first, double_second
     )
@@ -532,33 +527,48 @@ def acquista_biglietto():
     return redirect(url_for("profilo_partecipante"))
 
 def salva_immagine(file, nome_artista, prefisso="", numero=None):
-
     if not file or file.filename == "":
         return None
-    
-    # Controllo estensione
+
+    # controllo estensione
     ext = file.filename.rsplit(".", 1)[-1].lower()
     if ext not in ALLOWED_EXTENSIONS:
         return None
-    
-    # Genera nome file sicuro
+
+
+    # l'immagine con PIL
+    img = Image.open(file)
+
+    # nuova altezza mantenendo il rapporto d'aspetto
+    width, height = img.size
+    new_height = int(height / width * POST_IMG_WIDTH)
+    size = (POST_IMG_WIDTH, new_height)
+
+    # ridimensiona l'immagine
+    img.thumbnail(size, Image.Resampling.LANCZOS)
+
+    #  nome sicuro per il file
     safe_nome = nome_artista.lower().replace(" ", "_")
     timestamp = int(datetime.now().timestamp())
-    
+
     if numero:
         filename = f"{prefisso}{safe_nome}_{numero}_{timestamp}.{ext}"
     else:
         filename = f"{prefisso}{safe_nome}_{timestamp}.{ext}"
-    
-    # Salva file senza ridimensionamento
+
     file_path = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(file_path)
-    
+
+    # salvo l'immagine nella cartella static/images/
+    img.save(file_path)
+
+    # path relativo per usarlo nell'app
     return f"images/{filename}"
+
 
 # carica utente dal db in base al suo id
 @login_manager.user_loader
 def load_user(user_id):
+
     user_data = utenti_dao.get_utente_id(user_id)
     if user_data:
         return User(
@@ -570,14 +580,4 @@ def load_user(user_id):
             tipo=user_data[5]
         )
     return None
-    user_data = utenti_dao.get_utente_id(user_id)
-    if user_data:
-        return User(
-            id=user_data[0], 
-            nome=user_data[1], 
-            cognome=user_data[2],
-            email=user_data[3],
-            password=user_data[4],
-            tipo=user_data[5]
-        )
-    return None
+
