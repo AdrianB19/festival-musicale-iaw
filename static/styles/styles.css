@@ -1,13 +1,18 @@
-
 :root {
   /* Palette Festival */
-  --festival-orange: #ff6b35;      /* Arancio Energia */
-  --festival-yellow: #f7931e;      /* Giallo Sole */
-  --festival-green-dark: #2c5234;  /* Verde Parco */
-  --festival-green-light: #90c695; /* Verde Fresco */
-  --festival-sky: #87ceeb;          /* Azzurro Cielo */
-  --festival-cream: #fef7dc;        /* Crema Calda */
-  
+  --festival-orange: #ff6b35;
+  /* Arancio Energia */
+  --festival-yellow: #f7931e;
+  /* Giallo Sole */
+  --festival-green-dark: #2c5234;
+  /* Verde Parco */
+  --festival-green-light: #90c695;
+  /* Verde Fresco */
+  --festival-sky: #87ceeb;
+  /* Azzurro Cielo */
+  --festival-cream: #fef7dc;
+  /* Crema Calda */
+
   /* Varianti hover */
   --festival-orange-hover: #e55a2b;
   --festival-yellow-hover: #e0851a;
@@ -42,6 +47,10 @@ header a span {
 .nav-link:focus {
   color: var(--festival-orange);
   text-decoration: none;
+}
+
+.text-home {
+  color: var(--festival-yellow);
 }
 
 h1,
@@ -214,10 +223,10 @@ footer .text-body-secondary {
 }
 
 .carousel-image {
-    height: 400px;
-    object-fit: cover;
-    object-position: center;
-    border-radius: 12px;
+  height: 400px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 12px;
 }
 
 
@@ -314,7 +323,7 @@ textarea:focus {
   .hero-section {
     padding: 40px 20px;
   }
-  
+
   .filter-section {
     padding: 15px;
   }

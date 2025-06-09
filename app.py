@@ -81,6 +81,7 @@ def about():
 # passo biglietti + stats
 @app.route("/biglietti")
 def biglietti():
+    
     dati_biglietti = biglietti_dao.get_opzioni_biglietti()
     statistiche_disponibilita = acquisti_dao.get_statistiche_disponibilita()
     return render_template("biglietti.html", dati_biglietti = dati_biglietti, statistiche_disponibilita=statistiche_disponibilita)

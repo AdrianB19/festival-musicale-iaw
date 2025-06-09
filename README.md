@@ -18,9 +18,10 @@ L’applicazione utilizza un database relazionale (es. SQLite) per archiviare in
 - Performance musicali
 - Biglietti acquistati
 - Palchi disponibili
+- Immagini disponibili per la performance
 
 ### 📝 Diagramma Entità-Relazione
-![diagramma_er](/static/images/database_er.png)
+![diagramma_er](/static/images/er_db.png)
 
 ### 👥 Tipi di utenti
 
@@ -59,7 +60,7 @@ Ogni performance musicale contiene i seguenti campi:
 
 - Un artista può esibirsi **una sola volta per edizione**
 - Non possono esserci **sovrapposizioni temporali** sullo stesso palco
-- Una performance **pubblicata non è più modificabile**
+- Una performance **pubblicata non è più modificabile ma eliminabile dall'organizzatore**
 - Gli organizzatori possono modificare **solo le proprie performance** in bozza
 
 ---
@@ -94,15 +95,26 @@ Ogni performance musicale contiene i seguenti campi:
 `````text
 festival-musicale-iaw/
 ├── static/
-│   ├── images/            # Immagini (loghi, banner, artisti,                                     ecc.)
-│   └── templates/         # Risorse CSS, JS o altri file statici
+│   ├── images/                       # Immagini 
+│   └── styles/                       # Risorse CSS
 ├── templates/
-│   ├── base.html          # Template base per tutte le pagine del fes
-│   ├── home.html          # Homepage del festival
-│   └── login.html         # Pagina di login/registrazione
-├── dao/
-│   ├── eventi_dao.py      # Accesso e gestione performance
-│   └── utenti_dao.py      # Accesso e gestione utenti
-├── app.py                 # Entry point dell’app Flask: routing e logica
-├── soundwave.db           # Database SQLite locale
-├── README.md              # Documentazione del progetto
+│   ├── base.html                     # Template base
+│   ├── biglietti.html                # Home
+│   ├── dettaglio_performance.html    # Dettaglio performance
+│   ├── faq.html                      # Pagina Faq 
+│   ├── login.html                    # Pagina Login
+│   ├── about.html                    # Pagina about
+│   ├── signup.html                   # Pagina registrazione
+│   ├── profilo_partecipante.html     # Profilo partecipante
+│   └── profilo_organizzatore.html    # Profilo organizzatore
+│ 
+│── acquisti_dao.py                   # Query acquisto ticket
+│── performances_dao.py               # Query per performances
+│── utenti_dao.py                     # Query sugli utenti
+│── palchi_dao.py                     # Query sui palchi
+│── immagini_dao.py                   # Query per immagini
+│── biglietti_dao.py                  # Query biglietti
+│── models.py                         # Modella gli oggetti usati
+├── app.py                            # Entry point dell’app 
+├── soundwave.db                      # Database SQLite locale
+├── README.md                         # Documentazione progetto
