@@ -1,17 +1,17 @@
 :root {
-  /* Palette Festival */
-  --festival-orange: #ff6b35;
-  /* Arancio Energia */
-  --festival-yellow: #f7931e;
-  /* Giallo Sole */
-  --festival-green-dark: #2c5234;
-  /* Verde Parco */
-  --festival-green-light: #90c695;
-  /* Verde Fresco */
-  --festival-sky: #87ceeb;
-  /* Azzurro Cielo */
-  --festival-cream: #fef7dc;
-  /* Crema Calda */
+
+  --festival-orange: #ff6b35;  /*  colore principale per bottoni ed accenti */
+
+  --festival-yellow: #f7931e;  /* avvisi e bottoni secondar */
+
+  --festival-green-dark: #2c5234;  /* colore testo */
+
+  --festival-green-light: #90c695;  /* bordi e contorni */
+
+  --festival-sky: #87ceeb;  /* accessibilità */
+
+  --festival-cream: #fef7dc; /* sfondo principale*/
+
 
   /* Varianti hover */
   --festival-orange-hover: #e55a2b;
@@ -22,7 +22,7 @@
 body {
   background-color: var(--festival-cream);
   color: var(--festival-green-dark);
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Poppins', sans-serif; /* font usato */
 }
 
 header {
@@ -39,7 +39,7 @@ header a span {
 .nav-link {
   color: var(--festival-green-dark);
   font-weight: 500;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease; /*cambio colore della transizione*/
 }
 
 .nav-link:hover,
@@ -74,6 +74,7 @@ strong,
   font-weight: 600;
 }
 
+/*testo enfatizzato*/
 .sottolineato-bold {
   font-weight: bold;
   text-decoration: underline;
@@ -88,6 +89,7 @@ strong,
   color: white !important;
 }
 
+/* bottoni */
 .btn-primary {
   background-color: var(--festival-orange);
   border-color: var(--festival-orange);
@@ -125,6 +127,7 @@ strong,
   border-color: var(--festival-yellow-hover);
 }
 
+/* card e contenitori ombre, bordi arrotondati e movimento*/
 .card {
   background-color: white;
   border: 1px solid rgba(144, 198, 149, 0.3);
@@ -132,7 +135,7 @@ strong,
   border-radius: 12px;
   transition: all 0.3s ease;
 }
-
+/*movimento*/
 .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 30px rgba(44, 82, 52, 0.15);
@@ -144,6 +147,7 @@ strong,
   color: var(--festival-green-dark);
 }
 
+/*ombra per alert arrotondata */
 .alert-info {
   background-color: var(--festival-yellow);
   color: var(--festival-green-dark);
@@ -157,6 +161,7 @@ strong,
   background-color: rgba(144, 198, 149, 0.2);
 }
 
+/*bottone di accordion*/
 .accordion-button {
   color: var(--festival-green-dark);
   background-color: transparent;
@@ -172,6 +177,8 @@ strong,
   background-color: #ffffff;
   font-weight: 700;
 }
+
+/*immagini artisti con bordo e forma circolare e transizione*/
 
 .artist-img {
   width: 80px;
@@ -209,6 +216,7 @@ footer .text-body-secondary {
   color: var(--festival-green-light) !important;
 }
 
+/* messaggi flash */
 .flash-message {
   padding: 1rem;
   border-radius: 8px;
@@ -227,26 +235,6 @@ footer .text-body-secondary {
   object-fit: cover;
   object-position: center;
   border-radius: 12px;
-}
-
-
-
-/* Sezione hero/banner */
-.hero-section {
-  background: linear-gradient(135deg, var(--festival-yellow), var(--festival-orange));
-  color: white;
-  padding: 60px 0;
-  border-radius: 15px;
-  margin-bottom: 30px;
-}
-
-.hero-section h1 {
-  color: white;
-  text-shadow: 2px 2px 4px rgba(44, 82, 52, 0.3);
-}
-
-.hero-section p {
-  color: rgba(255, 255, 255, 0.9);
 }
 
 /* Filtri e form */
