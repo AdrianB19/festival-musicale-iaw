@@ -49,7 +49,7 @@ Profilo Organizzatore
     <div class="row">
       {% for perf in pubblicate %}
       <div class="col-md-6 col-12 mb-4">
-        <div class="card h-100 position-relative">
+        <article class="card h-100 position-relative">
 
           <!-- Link all'intera card -->
           <a href="{{ url_for('dettaglio_performance', id=perf[0]) }}"
@@ -85,7 +85,7 @@ Profilo Organizzatore
             </form>
           </div>
           {% endif %}
-        </div>
+        </article>
       </div>
       {% endfor %}
     </div>
@@ -99,7 +99,7 @@ Profilo Organizzatore
   <h2>Le tue bozze</h2>
   <div class="row">
     {% for bozza in bozze %}
-    <div class="col-md-6 col-12 mb-4">
+    <article class="col-md-6 col-12 mb-4">
       <div class="card border-warning shadow-sm h-100">
         <div class="row g-0">
           <div class="col-md-3 col-4 d-flex align-items-center justify-content-center p-3">
@@ -130,7 +130,7 @@ Profilo Organizzatore
           </div>
         </div>
       </div>
-    </div>
+    </article>
     {% endfor %}
   </div>
 

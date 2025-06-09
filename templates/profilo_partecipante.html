@@ -5,10 +5,10 @@
 {% block contenuto %}
 
 {% if biglietto %}
-<div class="container mt-4">
+<main class="container mt-4">
   <h2 class="mb-4 text-center text-md-start">Il Tuo Biglietto</h2>
 
-  <div class="card border-primary shadow-lg">
+  <article class="card border-primary shadow-lg">
     <div class="card-header bg2 text-white">
       <h5 class="mb-0">
         <i class="bi bi-ticket-perforated"></i>
@@ -75,14 +75,14 @@
           </div>
 
           <!-- Info -->
-          <div class="alert alert-info mt-4">
+          <aside class="alert alert-info mt-4">
             <h6><i class="bi bi-info-circle"></i> Informazioni Importanti</h6>
             <ul class="mb-0 small">
               <li>È necessario un documento di identità valido</li>
               <li>Il biglietto è nominale e non trasferibile</li>
               <li>Conserva questo biglietto per tutta la durata dell'evento</li>
             </ul>
-          </div>
+          </aside>
         </div>
       </div>
     </div>
@@ -102,11 +102,11 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
+  </article>
+</main>
 
 {% else %}
-<div class="container mt-4">
+<section class="container mt-4">
   <div class="alert alert-info text-center">
     <h5><i class="bi bi-ticket"></i> Nessun Biglietto Acquistato</h5>
     <p class="mb-3">Non hai ancora acquistato un biglietto per il Torino Soundwave 2025.</p>
@@ -114,7 +114,7 @@
       <i class="bi bi-cart-plus"></i> Acquista Biglietto
     </a>
   </div>
-</div>
+</section>
 {% endif %}
 
 {% endblock %}
