@@ -5,152 +5,182 @@
 {% block home_active %}active{% endblock %}
 
 {% block contenuto %}
-<div class="row my-4 gx-3">
-    <article class="col-12 mb-5 ">
-        <div class="h-100 p-5 text-center text-white rounded-3  bg2">
-            <h1 class="display-4 fw-bold"> Torino - Soundwave</h1>
-            <p class="lead mt-3 text-home">
-                Benvenuto alla 10ª edizione del Torino Soundwave Festival,
-                il più amato dagli universitari!
-            </p>
-        </div>
-    </article>
+<main>
+    <section class="hero-section">
+        <article class="col-12 mb-5">
+            <div class="h-100 p-5 text-center text-white rounded-3 bg2">
+                <h1 class="display-4 fw-bold">Torino - Soundwave</h1>
+                <p class="lead mt-3 text-home">
+                    Benvenuto alla 10ª edizione del Torino Soundwave Festival,
+                    il più amato dagli universitari!
+                </p>
+            </div>
+        </article>
+    </section>
 
-</div>
-
-<!-- Sezione Filtri -->
-<section class="my-4">
-    <div class="card border-primary shadow-sm">
-        <div class="card-header  text-white d-flex align-items-center bg2">
-            <i class="bi bi-funnel-fill me-2"></i>
-            <h5 class="mb-0">Filtra Performance</h5>
-        </div>
-        <div class="card-body">
-            <form method="GET" action="{{ url_for('home') }}">
-                <div class="row gy-3 gx-3">
-                    <div class="col-12 col-md-4">
-                        <label for="palco" class="form-label">
-                            <i class="bi bi-mic-fill me-1 text-primary text-1"></i>Palco
-                        </label>
-                        <select class="form-select shadow-sm" id="palco" name="palco">
-                            <option value="">Tutti i palchi</option>
-                            {% for palco in palchi_disponibili %}
-                            <option value="{{ palco[0] }}" {% if filtro_palco==palco[0]|string %}selected{% endif %}>
-                                {{ palco[1] }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="col-12 col-md-4">
-                        <label for="data" class="form-label">
-                            <i class="bi bi-calendar-event-fill me-1 text-primary"></i>Data
-                        </label>
-                        <select class="form-select shadow-sm" id="data" name="data">
-                            <option value="">Tutte le date</option>
-                            {% for data in date_disponibili %}
-                            <option value="{{ data.iso }}" {% if filtro_data==data.iso %}selected{% endif %}>
-                                {{ data.formattata }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="col-12 col-md-4">
-                        <label for="genere" class="form-label">
-                            <i class="bi bi-music-note-list me-1 text-primary"></i>Genere
-                        </label>
-                        <select class="form-select shadow-sm" id="genere" name="genere">
-                            <option value="">Tutti i generi</option>
-                            {% for genere in generi_disponibili %}
-                            <option value="{{ genere }}" {% if filtro_genere==genere %}selected{% endif %}>
-                                {{ genere }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <div class="d-flex flex-wrap gap-2 mt-4">
-                    <button type="submit" class="btn btn-primary shadow-sm">
-                        <i class="bi bi-check-circle me-1"></i>Applica Filtri
-                    </button>
-                    <a href="{{ url_for('home') }}" class="btn btn-outline-secondary shadow-sm">
-                        <i class="bi bi-x-circle me-1"></i>Rimuovi Filtri
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
-</section>
-
-
-<!-- Sezione Performance -->
-<section class="mt-5">
-    <h2 class="mb-4">Performance Pubbliche</h2>
-
-    {% if performances %}
-    <div class="row row-cols-1 row-cols-md-2 g-4">
-        {% for perf in performances %}
-        <div class="col">
-            <div class="card h-100 shadow-sm">
-                <a href="{{ url_for('dettaglio_performance', id=perf[0]) }}" class="text-decoration-none text-dark">
-                    <div class="row g-0 h-100">
-                        <!-- Immagine artista -->
-                        <div class="col-4 d-flex align-items-center justify-content-center p-2">
-                            {% if perf[0] in artisti and artisti[perf[0]][1] %}
-                            <img src="{{ url_for('static', filename=artisti[perf[0]][1]) }}"
-                                alt="Foto artista {{ artisti[perf[0]][0] }}" class="img-fluid rounded-circle shadow"
-                                style="width: 100px; height: 100px; object-fit: cover;">
-                            {% endif %}
+    <!-- sezione Filtri -->
+    <section class="filter-section my-4" aria-label="Filtri per le performance">
+        <div class="card border-primary shadow-sm">
+            <header class="card-header text-white d-flex align-items-center bg2">
+                <i class="bi bi-funnel-fill me-2" aria-hidden="true"></i>
+                <h2 class="mb-0">Filtra Performance</h2>
+            </header>
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('home') }}" role="search">
+                    <div class="row gy-3 gx-3">
+                        <div class="col-12 col-md-4">
+                            <label for="palco" class="form-label">
+                                <i class="bi bi-mic-fill me-1 text-primary text-1" aria-hidden="true"></i>
+                                Palco
+                            </label>
+                            <select class="form-select shadow-sm" id="palco" name="palco" aria-describedby="palco-help">
+                                <option value="">Tutti i palchi</option>
+                                {% for palco in palchi_disponibili %}
+                                <option value="{{ palco[0] }}" {% if filtro_palco==palco[0]|string %}selected{% endif %}>
+                                    {{ palco[1] }}
+                                </option>
+                                {% endfor %}
+                            </select>
                         </div>
-                        <!-- Dettagli performance -->
-                        <div class="col-8">
-                            <div class="card-body">
-                                <h5 class="card-title text-1">{{ perf[5] }}</h5>
-                                <p class="card-text"><strong>Artista:</strong> {{ artisti[perf[0]][0] }}</p>
-                                <p class="card-text"><strong>Data:</strong> {{ perf[1] }}</p>
-                                <p class="card-text"><strong>Ora:</strong> {{ perf[2] }} - {{ perf[3] }}</p>
-                                <p class="card-text"><strong>Durata:</strong>
-                                    {{ (perf[3][:2]|int - perf[2][:2]|int) * 60 + (perf[3][3:5]|int - perf[2][3:5]|int)
-                                    }} minuti
-                                </p>
-                                <p class="card-text"><strong>Genere:</strong> {{ perf[7] }}</p>
-                                <p class="card-text"><strong>Palco:</strong> {{ perf[8] }}</p>
+
+                        <div class="col-12 col-md-4">
+                            <label for="data" class="form-label">
+                                <i class="bi bi-calendar-event-fill me-1 text-primary" aria-hidden="true"></i>
+                                Data
+                            </label>
+                            <select class="form-select shadow-sm" id="data" name="data" aria-describedby="data-help">
+                                <option value="">Tutte le date</option>
+                                {% for data in date_disponibili %}
+                                <option value="{{ data.iso }}" {% if filtro_data==data.iso %}selected{% endif %}>
+                                    {{ data.formattata }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label for="genere" class="form-label">
+                                <i class="bi bi-music-note-list me-1 text-primary" aria-hidden="true"></i>
+                                Genere
+                            </label>
+                            <select class="form-select shadow-sm" id="genere" name="genere" aria-describedby="genere-help">
+                                <option value="">Tutti i generi</option>
+                                {% for genere in generi_disponibili %}
+                                <option value="{{ genere }}" {% if filtro_genere==genere %}selected{% endif %}>
+                                    {{ genere }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary shadow-sm">
+                            <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                            Applica Filtri
+                        </button>
+                        <a href="{{ url_for('home') }}" class="btn btn-outline-secondary shadow-sm" role="button">
+                            <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
+                            Rimuovi Filtri
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sezione Performance -->
+    <section class="performances-section mt-5" aria-label="Elenco delle performance">
+        <header>
+            <h2 class="mb-4">Performance Pubbliche</h2>
+        </header>
+
+        {% if performances %}
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for perf in performances %}
+            <div class="col">
+                <article class="card h-100 shadow-sm">
+                    <a href="{{ url_for('dettaglio_performance', id=perf[0]) }}" 
+                       class="text-decoration-none text-dark"
+                       aria-label="Dettagli performance di {{ artisti[perf[0]][0] }}">
+                        <div class="row g-0 h-100">
+                            <!-- Img artista -->
+                            <div class="col-4 d-flex align-items-center justify-content-center p-2">
+                                {% if perf[0] in artisti and artisti[perf[0]][1] %}
+                                <img src="{{ url_for('static', filename=artisti[perf[0]][1]) }}"
+                                     alt="Foto dell'artista {{ artisti[perf[0]][0] }}" 
+                                     class="img-fluid rounded-circle shadow"
+                                     style="width: 100px; height: 100px; object-fit: cover;">
+                                {% else %}
+                                <div class="placeholder-image rounded-circle shadow d-flex align-items-center justify-content-center"
+                                     style="width: 100px; height: 100px; background-color: var(--festival-green-light);">
+                                    <i class="bi bi-person-fill" style="font-size: 2rem; color: white;" aria-hidden="true"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- performance -->
+                            <div class="col-8">
+                                <div class="card-body">
+                                    <h3 class="card-title text-1">{{ perf[5] }}</h3>
+                                    <dl class="card-text">
+                                        <dt class="visually-hidden">Artista:</dt>
+                                        <dd><strong>Artista:</strong> {{ artisti[perf[0]][0] }}</dd>
+                                        
+                                        <dt class="visually-hidden">Data:</dt>
+                                        <dd><strong>Data:</strong> <time datetime="{{ perf[1] }}">{{ perf[1] }}</time></dd>
+                                        
+                                        <dt class="visually-hidden">Orario:</dt>
+                                        <dd><strong>Ora:</strong> 
+                                            <time datetime="{{ perf[2] }}">{{ perf[2] }}</time> - 
+                                            <time datetime="{{ perf[3] }}">{{ perf[3] }}</time>
+                                        </dd>
+                                        
+                                        <dt class="visually-hidden">Durata:</dt>
+                                        <dd><strong>Durata:</strong>
+                                            {{ (perf[3][:2]|int - perf[2][:2]|int) * 60 + (perf[3][3:5]|int - perf[2][3:5]|int) }} minuti
+                                        </dd>
+                                        
+                                        <dt class="visually-hidden">Genere musicale:</dt>
+                                        <dd><strong>Genere:</strong> {{ perf[7] }}</dd>
+                                        
+                                        <dt class="visually-hidden">Palco:</dt>
+                                        <dd><strong>Palco:</strong> {{ perf[8] }}</dd>
+                                    </dl>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
+                </article>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-warning mt-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+            Nessuna performance trovata con i filtri selezionati.
+        </div>
+        {% endif %}
+    </section>
+
+    {% if not current_user.is_authenticated %}
+    <!-- acquista biglietto -->
+    <section class="cta-section my-5" aria-label="Call to action per l'acquisto biglietti">
+        <div class="card shadow-sm border-primary">
+            <div class="card-body text-center py-5">
+                <h3 class="fw-bold mb-3 text-primary">
+                    <span aria-hidden="true">🎟</span> Vuoi partecipare al Torino Soundwave?
+                </h3>
+                <p class="lead mb-4 text-muted">
+                    Accedi con il tuo account per acquistare un biglietto e vivere l'esperienza live con noi!
+                </p>
+                <a href="{{ url_for('login') }}" class="btn btn-primary px-4 py-2">
+                    <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>
+                    Accedi
                 </a>
             </div>
         </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="alert alert-warning mt-4" role="alert">
-        Nessuna performance trovata con i filtri selezionati.
-    </div>
+    </section>
     {% endif %}
-</section>
-
-{% if not current_user.is_authenticated %}
-<!--  Acquista un Biglietto -->
-<section class="my-5">
-    <div class="card shadow-sm border-primary">
-        <div class="card-body text-center py-5">
-            <h3 class="fw-bold mb-3 text-primary">
-                🎟 Vuoi partecipare al Torino Soundwave?
-            </h3>
-            <p class="lead mb-4 text-muted">
-                Accedi con il tuo account per acquistare un biglietto e vivere l’esperienza live con noi!
-            </p>
-            <a href="{{ url_for('login') }}" class="btn btn-primary px-4 py-2">
-                <i class="bi bi-box-arrow-in-right me-1"></i> Accedi
-            </a>
-        </div>
-    </div>
-</section>
-
-
-{% endif %}
-
+</main>
 {% endblock %}
