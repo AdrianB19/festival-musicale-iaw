@@ -1,22 +1,6 @@
 import sqlite3
 import os
 
-def get_immagini_performance(id_perf):
-    
-    sql = "SELECT url_immagine FROM has_immagini WHERE id_performance = ?"
-
-    conn = sqlite3.connect("soundwave.db")
-
-    cursor = conn.cursor()
-
-    cursor.execute(sql, (id_perf,))
-
-    res = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    return res if res else None
 
 def insert_immagine(id_performance, url_immagine):
 
@@ -64,19 +48,6 @@ def update_immagine_perf(id, vecchio_url, nuovo_url ):
 
     cursor.close()
     conn.close()
-
-def get_immagini_perf(id_performance):
-    sql = "SELECT url_immagine FROM has_immagini WHERE id_performance = ?"
-    conn = sqlite3.connect("soundwave.db")
-    cursor = conn.cursor()
-    cursor.execute(sql, (id_performance,))
-    res = cursor.fetchall() 
-    cursor.close()
-    conn.close()
-
-    return [row[0] for row in res]
-
-
 
 def delete_immagini_performance(id_performance):
     

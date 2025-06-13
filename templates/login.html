@@ -3,32 +3,40 @@
 {% block titolo %}Login - Torino Soundwave{% endblock %}
 
 {% block contenuto %}
-<div class="row mt-4">
-    <h1 class="display-6 text-center">Login</h1>
-</div>
-<div class="row justify-content-center">
-    <form action="/autenticare" method="post"
-        class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-4 bg-body-tertiary border border-light-subtle rounded-1 my-4 p-4">
-        
+<main class="container my-5">
+
+  <section class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+
+      <header class="text-center mb-4">
+        <h1 class="display-6">Login</h1>
+      </header>
+
+      <form action="/autenticare" method="post"
+        class="bg-body-tertiary border border-light-subtle rounded-1 p-4">
+
         <div class="mb-3">
-            <label for="txt_email" class="form-label">E-mail</label>
-            <input type="email" class="form-control" name="txt_email" id="txt_email"
-                placeholder="Inserisci la tua e-mail" required />
+          <label for="txt_email" class="form-label">E-mail</label>
+          <input type="email" class="form-control" name="txt_email" id="txt_email"
+            placeholder="Inserisci la tua e-mail" required>
         </div>
 
         <div class="mb-3">
-            <label for="txt_password" class="form-label">Password</label>
-            <input type="password" class="form-control" name="txt_password" id="txt_password"
-                placeholder="Inserisci la password" required />
+          <label for="txt_password" class="form-label">Password</label>
+          <input type="password" class="form-control" name="txt_password" id="txt_password"
+            placeholder="Inserisci la password" required>
         </div>
 
         <div class="mb-3">
-            <button type="submit" class="btn btn-primary w-100">Invia</button>
+          <button type="submit" class="btn btn-primary w-100">Invia</button>
         </div>
 
         <div class="text-center">
-            <small>Non hai ancora un account? <a href="{{ url_for('signup') }}">Registrati</a></small>
+          <small>Non hai ancora un account? <a href="{{ url_for('signup') }}">Registrati</a></small>
         </div>
-    </form>
-</div>
+      </form>
+    </div>
+  </section>
+
+</main>
 {% endblock %}

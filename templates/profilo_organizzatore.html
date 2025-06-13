@@ -78,7 +78,7 @@ Profilo Organizzatore
           </a>
 
           {% if perf[9]|int == current_user.id %}
-          <!-- Bottone Elimina esterno al link, a tutta larghezza -->
+          <!-- Elimina bozza-->
           <div class="p-3">
             <form method="POST" action="{{ url_for('elimina_performance', id=perf[0]) }}">
               <button class="btn btn-danger btn-sm w-100 position-relative z-1" type="submit">Elimina</button>
@@ -141,7 +141,6 @@ Profilo Organizzatore
     </button>
   </div>
 
-  <!-- Il resto dei modali e statistiche rimane invariato perché già responsive grazie a Bootstrap -->
   <!-- MODAL: Form per aggiungere una nuova performance -->
   <div class="modal fade" id="modalNuovaPerformance" tabindex="-1" aria-labelledby="modalNuovaPerformanceLabel"
     aria-hidden="true">

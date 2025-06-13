@@ -51,7 +51,7 @@ def get_biglietto_utente(id_utente):
 
      return res
 
-# date diverse festival
+# date diverse festival la uso x le stats
 def get_date_festival():
 
     conn = sqlite3.connect("soundwave.db")
@@ -130,21 +130,6 @@ def count_biglietti_per_data():
     
     return conteggio_per_data
         
-def get_biglietto_utente(id_utente):
-
-    sql = "SELECT id_biglietto, data FROM acquisti WHERE id_utente = ?"  
-
-    conn = sqlite3.connect("soundwave.db")
-    cursor = conn.cursor()
-    cursor.execute(sql, (id_utente,))
-    
-    res = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
-
-    return res
-
 def verifica_disponibilita_biglietto(tipo, single_day=None, double_first=None, double_second=None):
 
     MAX_BIGLIETTI_PER_GIORNO = 200
@@ -193,8 +178,6 @@ def verifica_disponibilita_biglietto(tipo, single_day=None, double_first=None, d
             'dettagli': dettagli_conteggio
         }
             
-    
-
 def get_statistiche_disponibilita():
 
     MAX_BIGLIETTI_PER_GIORNO = 200

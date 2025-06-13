@@ -27,7 +27,6 @@ body {
 
 header {
   background-color: var(--festival-cream);
-  border-bottom: 2px solid var(--festival-green-light);
 }
 
 header a span {
