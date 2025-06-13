@@ -291,7 +291,7 @@ def get_date_disponibili():
     cursor.close()
     conn.close()
     
-    # Formatta le date usando la stessa logica di biglietti_dao.py
+    # formatta le date usando la stessa logica di biglietti_dao.py
     date_formattate = []
     for row in results:
         data_iso = row[0]

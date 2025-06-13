@@ -1,4 +1,5 @@
 import sqlite3
+
 # inserisce un acquisto nel db
 def nuovo_acquisto(id_utente, id_biglietto, data):
 
@@ -49,22 +50,6 @@ def get_biglietto_utente(id_utente):
      cursor.close()
 
      return res
-
-# query che si occupa di inserire un biglietto per un partecipante nella tabella acquisti
-def insert_acquisto(id_utente, id_biglietto, data):
-
-    sql = "INSERT into acquisti (id_utente, id_biglietto, data) VALUES (?,?,?)"
-
-    conn = sqlite3.connect("soundwave.db")
-
-    cursor = conn.cursor()
-
-    cursor.execute(sql, (id_utente, id_biglietto, data))
-
-    conn.commit()
-
-    conn.close()
-    cursor.close()
 
 # date diverse festival
 def get_date_festival():
