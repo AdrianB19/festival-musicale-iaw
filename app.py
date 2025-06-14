@@ -341,6 +341,10 @@ def nuova_performance():
             flash("La performance non deve durare più di 90 minuti.", "danger")
             return redirect(url_for("profilo_organizzatore"))
         
+        if (fine_dt - inizio_dt) < timedelta(minutes=30):
+            flash("La performance deve durare almeno 30 minuti.", "danger")
+            return redirect(url_for("profilo_organizzatore"))
+        
         if visibilita == 1:
             if performances_dao.verifica_sovrapposizione(data, ora_inizio, ora_fine, id_palco):
                 flash("Errore: performance sovrapposta a un'altra sullo stesso palco.", "danger")
@@ -469,6 +473,11 @@ def modifica_bozza(id):
         if fine_dt <= inizio_dt:
             flash("L'ora di inizio deve essere precedente all'ora di fine.", "danger")
             return redirect(url_for("profilo_organizzatore"))
+        
+        if nome_artista != bozza["nome_artista"]:
+            if performances_dao.artista_esiste(nome_artista):
+                flash("Errore: un artista con questo nome esiste già nel database.", "danger")
+                return redirect(url_for("profilo_organizzatore"))
 
         if inizio_dt.time() < datetime.strptime("14:00", "%H:%M").time():
             flash("L'ora di inizio deve essere dopo le 14:00.", "danger")
