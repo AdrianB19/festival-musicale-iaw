@@ -3,14 +3,13 @@ from flask import Flask, render_template, request, redirect, url_for, flash, abo
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
 from PIL import Image
 import os
 
 from models  import User
 import utenti_dao, biglietti_dao, performances_dao, palchi_dao , acquisti_dao, immagini_dao
 
-app = Flask(__name__)
+app = Flask(__name__)  # inizializzo app
 app.config["SECRET_KEY"] = "secretpass"
 
 # inizializzazione del login manager
@@ -225,7 +224,7 @@ def profilo_partecipante():
 
     if current_user.tipo != 'partecipante':
         flash("Accesso non autorizzato.", "danger")
-        abort(404)
+        abort(403)
     
     # vedo se un utente ha un comprato un biglietto, lo prendo dal db e passo anche data acquisto
     try:
@@ -254,7 +253,7 @@ def profilo_organizzatore():
 
     if current_user.tipo != 'organizzatore':
         flash("Accesso non autorizzato.", "danger")
-        abort(404)
+        abort(403)
 
     palco_id = request.args.get('palco')
     data = request.args.get('data')
@@ -542,7 +541,7 @@ def acquista_biglietto():
     # verifica tipo utente
     if current_user.tipo != 'partecipante':
         flash("Errore: sei un organizzatore, non puoi comprare un biglietto", "danger")
-        abort(404)
+        abort(403)
     
     # recupera dati dal form
     start_date = request.form.get("start_date", "").strip()
