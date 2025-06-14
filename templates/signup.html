@@ -3,7 +3,7 @@
 {% block titolo %}Registrati - Torino Soundwave{% endblock %}
 
 {% block contenuto %}
-<main class="container my-5">
+<div class="container my-5">
 
   <!-- Titolo -->
   <header class="row">
@@ -14,11 +14,13 @@
 
   <!-- Flash -->
   <section class="row justify-content-center mt-4">
+    <h2 class="visually-hidden">Messaggi di sistema</h2>
     <div class="col-12 col-md-8">
       {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
       {% for category, message in messages %}
-      <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+      <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show"
+        role="alert">
         {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Chiudi"></button>
       </div>
@@ -30,23 +32,27 @@
 
   <!-- Form registrazione -->
   <section class="row justify-content-center mt-4">
+    <h2 id="form-registrazione" class="visually-hidden">Modulo registrazione</h2>
     <div class="col-12 col-sm-10 col-md-8 col-lg-7 bg-body-tertiary border border-light-subtle rounded-1 p-4">
       <p class="text-center">Completa il form di registrazione, ci vorranno un paio di minuti!</p>
 
       <form action="{{ url_for('subscribe') }}" method="post" class="row g-3" aria-labelledby="form-registrazione">
         <div class="col-12 col-md-6">
           <label for="txt_nome" class="form-label">Nome</label>
-          <input type="text" class="form-control" name="txt_nome" id="txt_nome" placeholder="Inserisci il tuo nome" required>
+          <input type="text" class="form-control" name="txt_nome" id="txt_nome" placeholder="Inserisci il tuo nome"
+            required>
         </div>
 
         <div class="col-12 col-md-6">
           <label for="txt_cognome" class="form-label">Cognome</label>
-          <input type="text" class="form-control" name="txt_cognome" id="txt_cognome" placeholder="Inserisci il tuo cognome" required>
+          <input type="text" class="form-control" name="txt_cognome" id="txt_cognome"
+            placeholder="Inserisci il tuo cognome" required>
         </div>
 
         <div class="col-12 col-md-6">
           <label for="txt_email" class="form-label">E-mail</label>
-          <input type="email" class="form-control" name="txt_email" id="txt_email" placeholder="Inserisci la tua email" required>
+          <input type="email" class="form-control" name="txt_email" id="txt_email" placeholder="Inserisci la tua email"
+            required>
         </div>
 
         <div class="col-12 col-md-6">
@@ -76,5 +82,5 @@
     </div>
   </section>
 
-</main>
+</div>
 {% endblock %}
