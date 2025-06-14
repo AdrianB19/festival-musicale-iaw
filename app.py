@@ -39,7 +39,7 @@ def home():
         else:
             performances = performances_dao.get_performances_pubbliche()
         
-        # dizionario degli artisti
+        # dizionario degli artisti per prendere url immagine e nome
         artisti = {
             perf[0]: (perf[5], perf[6])
             for perf in performances
@@ -51,6 +51,7 @@ def home():
         generi_disponibili = performances_dao.get_generi_disponibili()
     except:
         flash("Errore nel caricamento dei dati,","error")
+        return redirect(url_for("home"))
     
     return render_template("home.html",
                           performances=performances,
