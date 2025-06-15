@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from datetime import datetime
 
 # aggiunge performance nel db
 def nuova_performance(data, ora_inizio, ora_fine,  descrizione, nome_artista, img_artista, genere, is_visibile, id_palco, id_organizzatore):
@@ -274,8 +275,7 @@ def get_generi_disponibili():
 
 # ottieni tutte le date distinte delle performances pubbliche
 def get_date_disponibili():
-    from datetime import datetime
-    
+
     sql = """
         SELECT DISTINCT data
         FROM performances
