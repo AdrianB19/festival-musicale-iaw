@@ -1,5 +1,7 @@
 import sqlite3
 
+MAX_BIGLIETTI_PER_GIORNO = 200
+
 # inserisce un acquisto nel db
 def nuovo_acquisto(id_utente, id_biglietto, data):
 
@@ -115,9 +117,6 @@ def count_biglietti_per_data():
         
 def verifica_disponibilita_biglietto(tipo, single_day=None, double_first=None, double_second=None):
 
-    MAX_BIGLIETTI_PER_GIORNO = 200
-    
-   
     # date da verificare in base al tipo di biglietto
     date_da_verificare = []
     
@@ -163,8 +162,6 @@ def verifica_disponibilita_biglietto(tipo, single_day=None, double_first=None, d
             
 def get_statistiche_disponibilita():
 
-    MAX_BIGLIETTI_PER_GIORNO = 200
-
     date_festival = get_date_festival()
     conteggi = count_biglietti_per_data()
     
@@ -190,10 +187,6 @@ def count_biglietti_per_singola_data(data_specifica):
 
     sql = """
             SELECT 
-                b.tipo,
-                b.single_day,
-                b.double_first, 
-                b.double_second,
                 COUNT(a.id_utente) as num_biglietti
             FROM acquisti a
             JOIN biglietti b ON a.id_biglietto = b.id
@@ -202,7 +195,6 @@ def count_biglietti_per_singola_data(data_specifica):
                 (b.tipo = 'Due giorni' AND (b.double_first = ? OR b.double_second = ?)) OR
                 (b.tipo = 'Full pass')
             )
-            GROUP BY b.id
             """
     
     conn = sqlite3.connect("soundwave.db")
@@ -212,22 +204,12 @@ def count_biglietti_per_singola_data(data_specifica):
 
     cursor.execute(sql, (data_specifica, data_specifica, data_specifica))
         
-    results = cursor.fetchall()
+    res = cursor.fetchone()
 
     cursor.close()
     conn.close()
-
-    conteggio = 0
-        
-    date_festival = get_date_festival()  
-        
-    for tipo, single_day, double_first, double_second, num_biglietti in results:
-        if tipo == "Full pass" and data_specifica in date_festival:
-            conteggio += num_biglietti
-        else:
-            conteggio += num_biglietti
     
-    return conteggio
+    return res[0]
 
 # per mostrarlo sul biglietto in area personale
 def get_data_acquisto(id_utente):
