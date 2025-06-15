@@ -36,7 +36,7 @@ Per quanto riguarda l'acquisto del singolo biglietto non ci sono state scelte di
 
 ## Credenziali utenti di test
 
-Vengono fornite le credenziali di tre partecipanti (devastasi@gmail.com contiene una bozza) e quelle di tre partecipanti che hanno acquistato tre tipologie di biglietti diversi.
+Vengono fornite le credenziali di tre organizzatori e quelle di tre partecipanti che hanno acquistato tre tipologie di biglietti diversi.
 
 ### Organizzatori 
 * email: boniolo.adrian@gmail.com Password: Password1  (bozza Domenica 22)
