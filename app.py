@@ -85,6 +85,7 @@ def about():
 
 # passo biglietti + stats
 @app.route("/biglietti")
+@login_required
 def biglietti():
     try:
         dati_biglietti = biglietti_dao.get_opzioni_biglietti()
@@ -417,7 +418,6 @@ def pubblica_bozza(id):
         ora_inizio = bozza["ora_inizio"]
         ora_fine = bozza["ora_fine"]
         id_palco = bozza["id_palco"]
-        nome_artista = bozza["nome_artista"]
 
         # controllo sovrapposizione
         sovrapposte = performances_dao.verifica_sovrapposizione(data, ora_inizio, ora_fine, id_palco)
