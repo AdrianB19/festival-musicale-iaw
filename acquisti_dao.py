@@ -34,23 +34,6 @@ def verifica_acquisto_utente(id_utente):
 
     return res[0] if res else None # è una tupla
     
-# dato l'id del partecipante  
-def get_biglietto_utente(id_utente):
-     
-     sql = "SELECT id_biglietto, data FROM acquist WHERE id_utente = ? "
-
-     conn = sqlite3.connect("soundwave.db")
-
-     cursor = conn.cursor()
-     cursor.execute(sql, (id_utente,))
-    
-     res = cursor.fetchone()
-
-     conn.close()
-     cursor.close()
-
-     return res
-
 # date diverse festival la uso x le stats
 def get_date_festival():
 
@@ -112,18 +95,18 @@ def count_biglietti_per_data():
     
     # itero
     for tipo, single_day, double_first, double_second, num_biglietti in results:
-        # cerco data giusta e +1
+        # cerco data giusta e +
         if tipo == "Giornaliero" and single_day:
             if single_day in conteggio_per_data:
                 conteggio_per_data[single_day] += num_biglietti
-        # + 1 nelle date
+        # + nelle date
 
         elif tipo == "Due giorni" and double_first and double_second:
             if double_first in conteggio_per_data:
                 conteggio_per_data[double_first] += num_biglietti
             if double_second in conteggio_per_data:
                 conteggio_per_data[double_second] += num_biglietti
-        # +1 in tutte le date
+        # + in tutte le date
         elif tipo == "Full pass":
             for data in date_festival:
                 conteggio_per_data[data] += num_biglietti
