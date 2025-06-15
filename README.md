@@ -39,9 +39,9 @@ Per quanto riguarda l'acquisto del singolo biglietto non ci sono state scelte di
 Vengono fornite le credenziali di tre partecipanti (devastasi@gmail.com contiene una bozza) e quelle di tre partecipanti che hanno acquistato tre tipologie di biglietti diversi.
 
 ### Organizzatori 
-* email: boniolo.adrian@gmail.com Password: Password1
-* email jsaenz@gmail.com Password: Password2
-* email devastasi@gmail.com Password: Password3
+* email: boniolo.adrian@gmail.com Password: Password1  (bozza Domenica 22)
+* email jsaenz@gmail.com Password: Password2 (bozza Sabato 21)
+* email devastasi@gmail.com Password: Password3 (bozza Venerdì 20)
 
 ### Partecipanti
 * email: matteocastigliego@gmail.com Password: Password3
